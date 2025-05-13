@@ -1,0 +1,61 @@
+package it.epicode.Capstone.login.authGoogle;
+
+import it.epicode.Capstone.login.auth.Role;
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+@Validated
+@Data
+public class CustomOAuth2UserService extends DefaultOAuth2UserService implements UserDetailsService {
+    @Autowired
+    private UtenteGoogleRepository userRepository;
+
+    @Override
+    public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
+        OAuth2User oauthUser = super.loadUser(request);
+
+        // Ottieni l'email e altri dati dal userInfo (dal provider, in questo caso Google)
+        String email = oauthUser.getAttribute("email");
+
+        // Crea un oggetto di tipo DefaultOAuth2User con le autorità
+        Set<SimpleGrantedAuthority> authorities = Set.of(new SimpleGrantedAuthority(Role.ROLE_USER.name()));
+
+        // Restituisci l'utente OAuth2 come DefaultOAuth2User
+        return new DefaultOAuth2User(
+                authorities,
+                oauthUser.getAttributes(),
+                "email"  // Attributo principale per la gestione dell'utente
+        );
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        UtenteGoogle utente = userRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Utente Google non trovato con email: " + username));
+
+        return new User(
+                utente.getEmail(),
+                "", // nessuna password perché Google gestisce l'autenticazione
+                utente.getRoles().stream()
+                        .map(role -> new SimpleGrantedAuthority(role.name()))
+                        .collect(Collectors.toList())
+        );
+    }
+}
+

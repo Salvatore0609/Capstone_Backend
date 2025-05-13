@@ -1,0 +1,173 @@
+package it.epicode.Capstone.databasePucSassari.articoli;
+
+import it.epicode.Capstone.databasePucSassari.sezioni.Sezione;
+import it.epicode.Capstone.databasePucSassari.sezioni.SezioneResponse;
+import it.epicode.Capstone.databasePucSassari.sezioni.usipermessi.UsiPermessiResponse;
+import it.epicode.Capstone.databasePucSassari.sezioni.usipermessi.UsoPermesso;
+import it.epicode.Capstone.databasePucSassari.sottozone.Sottozona;
+import it.epicode.Capstone.databasePucSassari.sottozone.SottozoneResponse;
+import it.epicode.Capstone.databasePucSassari.sottozone.parametri.ParametriResponse;
+import it.epicode.Capstone.databasePucSassari.sottozone.parametri.Parametro;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Component
+public class ArticoloMapper {
+    // Metodo per mappare ArticoloRequest -> Articolo (per la persistenza)
+    public Articolo toEntity(ArticoloRequest request) {
+        Articolo articolo = new Articolo();
+        articolo.setTitolo(request.getTitolo());
+
+        if (request.getSezioni() != null) {
+            List<Sezione> sezioni = request.getSezioni().stream().map(sezioneRequest -> {
+                Sezione sezione = new Sezione();
+                sezione.setTitolo(sezioneRequest.getTitolo());
+                sezione.setContenuto(sezioneRequest.getContenuto());
+                sezione.setArticolo(articolo); // relazione bidirezionale
+
+                // Mappiamo Sottozone
+                if (sezioneRequest.getSottozone() != null) {
+                    List<Sottozona> sottozone = sezioneRequest.getSottozone().stream().map(sottozonaRequest -> {
+                        Sottozona sottozona = new Sottozona();
+                        sottozona.setNome(sottozonaRequest.getNome());
+                        sottozona.setDescrizione(sottozonaRequest.getDescrizione());
+                        sottozona.setSezione(sezione); // relazione bidirezionale
+
+                        // Parametri
+                        if (sottozonaRequest.getParametri() != null) {
+                            List<Parametro> parametri = sottozonaRequest.getParametri().stream().map(parametroRequest -> {
+                                Parametro parametro = new Parametro();
+                                parametro.setIndiceFondiario(parametroRequest.getIndiceFondiario());
+                                parametro.setAltezzaMassima(parametroRequest.getAltezzaMassima());
+                                parametro.setRapportoCopertura(parametroRequest.getRapportoCopertura());
+                                parametro.setIntensitaTerritorialeMassima(parametroRequest.getIntensitaTerritorialeMassima());
+                                parametro.setLottoMinimo(parametroRequest.getLottoMinimo());
+                                parametro.setVolumeMassimo(parametroRequest.getVolumeMassimo());
+                                parametro.setIndiceTerritoriale(parametroRequest.getIndiceTerritoriale());
+                                parametro.setVolumetria(parametroRequest.getVolumetria());
+                                parametro.setIncremento(parametroRequest.getIncremento());
+                                parametro.setDeroga(parametroRequest.getDeroga());
+                                parametro.setTipo(parametroRequest.getTipo());
+                                parametro.setIndice(parametroRequest.getIndice());
+                                parametro.setNote(parametroRequest.getNote());
+                                parametro.setSottozona(sottozona); // relazione
+                                return parametro;
+                            }).collect(Collectors.toList());
+                            sottozona.setParametri(parametri);
+                        }
+
+                        sottozona.setNote(sottozonaRequest.getNote());
+
+                        return sottozona;
+                    }).collect(Collectors.toList());
+
+                    sezione.setSottozone(sottozone);
+                }
+
+                // Categorie
+                sezione.setCategorie(sezioneRequest.getCategorie());
+
+                // Usi Permessi
+                if (sezioneRequest.getUsiPermessi() != null) {
+                    List<UsoPermesso> usiPermessi = sezioneRequest.getUsiPermessi().stream().map(usoRequest -> {
+                        UsoPermesso uso = new UsoPermesso();
+                        uso.setZona(usoRequest.getZona());
+                        uso.setMacrocategorie(usoRequest.getMacrocategorie());
+                        uso.setDescrizione(usoRequest.getDescrizione());
+                        uso.setUsi(usoRequest.getUsi());
+                        uso.setNote(usoRequest.getNote());
+                        uso.setSezione(sezione); // relazione bidirezionale
+                        return uso;
+                    }).collect(Collectors.toList());
+                    sezione.setUsiPermessi(usiPermessi);
+                }
+
+                // Parametri Urbanistici
+                sezione.setParametriUrbanistici(sezioneRequest.getParametriUrbanistici());
+
+                return sezione;
+            }).collect(Collectors.toList());
+
+            articolo.setSezioni(sezioni);
+        }
+
+        return articolo;
+    }
+
+    // Metodo per mappare Articolo -> ArticoloResponse (per la risposta)
+    public ArticoloResponse toResponse(Articolo articolo) {
+        return new ArticoloResponse(
+                articolo.getArtId(),
+                articolo.getTitolo(),
+                articolo.getSezioni().stream()
+                        .map(this::toSezioneResponse)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    // Mappiamo la Sezione in SezioneResponse
+    private SezioneResponse toSezioneResponse(Sezione sezione) {
+        return new SezioneResponse(
+                sezione.getSezId(),
+                sezione.getTitolo(),
+                sezione.getContenuto(),
+                sezione.getSottozone().stream()
+                        .map(this::toSottozonaResponse)
+                        .collect(Collectors.toList()),
+
+                sezione.getCategorie(),
+
+                sezione.getUsiPermessi().stream()
+                        .map(this::toUsoResponse)
+                        .collect(Collectors.toList()),
+                sezione.getParametriUrbanistici()
+        );
+    }
+
+    // Mappiamo la Sottozona in SottozonaResponse
+    private SottozoneResponse toSottozonaResponse(Sottozona sottozona) {
+        return new SottozoneResponse(
+                sottozona.getSottozId(),
+                sottozona.getNome(),
+                sottozona.getDescrizione(),
+                sottozona.getParametri().stream()
+                        .map(this::toParametriResponse)
+                        .collect(Collectors.toList()),
+                sottozona.getNote()
+        );
+    }
+
+    // Mappiamo i Parametri in ParametriResponse
+    private ParametriResponse toParametriResponse(Parametro parametro) {
+        return new ParametriResponse(
+                parametro.getIndiceFondiario(),
+                parametro.getAltezzaMassima(),
+                parametro.getRapportoCopertura(),
+                parametro.getIntensitaTerritorialeMassima(),
+                parametro.getLottoMinimo(),
+                parametro.getVolumeMassimo(),
+                parametro.getIndiceTerritoriale(),
+                parametro.getVolumetria(),
+                parametro.getIncremento(),
+                parametro.getDeroga(),
+                parametro.getTipo(),
+                parametro.getIndice(),
+                parametro.getNote()
+        );
+    }
+
+
+    // Mappiamo UsoPermesso in UsoPermessoResponse
+    private UsiPermessiResponse toUsoResponse(UsoPermesso uso) {
+        return new UsiPermessiResponse(
+                uso.getId(),
+                uso.getZona(),
+                uso.getMacrocategorie(),
+                uso.getDescrizione(),
+                uso.getUsi(),
+                uso.getNote()
+        );
+    }
+}

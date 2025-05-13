@@ -1,0 +1,21 @@
+package it.epicode.Capstone.databasePucSassari.sezioni;
+
+import it.epicode.Capstone.databasePucSassari.sezioni.usipermessi.UsiPermessiRequest;
+import it.epicode.Capstone.databasePucSassari.sottozone.SottozoneRequest;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class SezioneRequest {
+    private String titolo;  // Titolo della sezione
+    private List<String> contenuto;  // Contenuti della sezione
+    private List<SottozoneRequest> sottozone;  // Lista delle sottozone
+    private List<String> categorie;  // Lista delle categorie
+    private List<UsiPermessiRequest> usiPermessi;  // Lista degli usi permessi
+    private List<String> parametriUrbanistici;  // Parametri urbanistici
+}
