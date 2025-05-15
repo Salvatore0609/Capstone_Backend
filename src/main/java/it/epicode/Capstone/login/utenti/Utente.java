@@ -30,14 +30,24 @@ public class Utente implements UserDetails {
     @JsonIgnore
     private String password;
 
-    @Column
+    @Column( unique = true, length = 100)
     private String email;
-    @Column
+    @Column( length = 50)
     private String nome;
-    @Column
+    @Column (length = 50)
     private String cognome;
-    @Column
+    @Column(length = 500)
     private String avatar;
+    @Column
+    private Integer annoNascita;
+    @Column
+    private String luogoNascita;
+    @Column
+    private String residenza;
+    @Column
+    private String nomeCompagnia;
+    @Column
+    private String lingua;
 
     //tipo utente
     @ElementCollection(fetch = FetchType.EAGER)

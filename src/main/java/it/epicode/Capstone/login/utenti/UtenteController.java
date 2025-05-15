@@ -4,14 +4,17 @@ package it.epicode.Capstone.login.utenti;
 
 import it.epicode.Capstone.login.auth.AuthResponse;
 import it.epicode.Capstone.login.auth.LoginRequest;
+import it.epicode.Capstone.login.common.CommonResponse;
 import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -36,15 +39,20 @@ public class UtenteController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/current-user")
     public Utente getCurrentUser(@AuthenticationPrincipal Utente utente) {
+        System.out.println("Utente corrente: " + utente);
         return utente;
     }
 
 
-    @PostMapping("/register")
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<String> createUtente(@RequestBody UtenteAuthRequest request) throws MessagingException {
-        utenteService.registerUtente(request);
-        return ResponseEntity.ok("Registrazione avvenuta con successo");
+    public ResponseEntity<UtenteResponse> createUtente(
+            @RequestPart("request") UtenteAuthRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file)
+            throws MessagingException {
+
+        UtenteResponse response = utenteService.registerUtente(request, file);
+        return ResponseEntity.ok(response);
     }
 
 

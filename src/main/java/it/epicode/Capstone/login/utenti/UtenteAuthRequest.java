@@ -15,11 +15,18 @@ public class UtenteAuthRequest {
     @NotBlank (message = "Il cognome non può essere vuoto")
     private String cognome;
     @NotBlank (message = "L'email non può essere vuota")
-    @Column(unique = true)
     private String email;
     @NotBlank (message = "L'username non può essere vuoto")
-    @Column(unique = true)
     private String username;
     @NotBlank (message = "La password non può essere vuota")
     private String password;
+    @NotBlank (message = "L'anno di nascita non può essere vuoto")
+    private Integer annoNascita;
+    @NotBlank (message = "Il tuo  luogo di nascita non può essere vuoto")
+    private String luogoNascita;
+    @NotBlank (message = "Il tuo domicilio attuale non può essere vuoto")
+    private String residenza;
+
+    private String nomeCompagnia;
+    private String lingua;
 }

@@ -20,5 +20,13 @@ public class UtenteRequest {
     @NotBlank (message = "L'username non può essere vuoto")
     @Column(unique = true)
     private String username;
+    @NotBlank (message = "Il tuo annodi nascita non può essere vuoto")
+    private Integer annoNascita;
+    @NotBlank (message = "Il tuo luogo di nascita non può essere vuoto")
+    private String luogoNascita;
+    @NotBlank (message = "Il tuo domicilio attuale non può essere vuoto")
+    private String residenza;
+    private String nomeCompagnia;
+    private String lingua;
 
 }

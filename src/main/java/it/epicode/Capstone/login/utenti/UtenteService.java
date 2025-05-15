@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -42,25 +44,56 @@ public class UtenteService {
     private JwtTokenUtil jwtTokenUtil;
 
 
-   //REGISTRAZIONE UTENTE
-
-    public Utente registerUtente(UtenteAuthRequest request) throws MessagingException {
+    public UtenteResponse registerUtente(UtenteAuthRequest request, MultipartFile file) throws MessagingException {
+        // Verifica username esistente
         if (utenteRepository.existsByUsername(request.getUsername())) {
             throw new EntityExistsException("Username già in uso");
         }
-
+        // Crea nuovo utente e copia le proprietà
         Utente utente = new Utente();
-        utente.setNome(request.getNome());
-        utente.setCognome(request.getCognome());
-        utente.setEmail(request.getEmail());
-        utente.setUsername(request.getUsername());
+        BeanUtils.copyProperties(request, utente);
+
+        // Gestione avatar
+        if (file != null && !file.isEmpty()) {
+            String avatarUrl = cloudinaryService.uploadImage(file);
+            utente.setAvatar(avatarUrl);
+        } else {
+            utente.setAvatar("https://ui-avatars.com/api/?name=" +
+                    URLEncoder.encode(utente.getNome() + "+" + utente.getCognome(), StandardCharsets.UTF_8));
+        }
+        // Codifica password e imposta ruoli
         utente.setPassword(passwordEncoder.encode(request.getPassword()));
         utente.setRoles(Set.of(Role.ROLE_USER));
-        utente.setAvatar("https://ui-avatars.com/api/?name=" + utente.getNome() + "+" + utente.getCognome());
-        emailSenderService.sendEmail(utente.getEmail(), "Benvenuto", "Ciao "+utente.getNome() + " " + utente.getCognome()+"! Benvenuto in Archiplanner!" );
-        return utenteRepository.save(utente);
+        // Salva l'utente
+        Utente savedUtente = utenteRepository.save(utente);
+        // Invia email di benvenuto
+        emailSenderService.sendEmail(
+                savedUtente.getEmail(),
+                "Benvenuto",
+                "Ciao " + savedUtente.getNome() + " " + savedUtente.getCognome() + "! Benvenuto in Archiplanner!"
+        );
+        // Costruisci e restituisci la risposta completa
+        return mapToResponse(savedUtente);
+    }
+    // Metodo helper per la conversione da Utente a UtenteResponse
+    private UtenteResponse mapToResponse(Utente utente) {
+        UtenteResponse response = new UtenteResponse();
+        response.setId(utente.getId());
+        response.setUsername(utente.getUsername());
+        response.setEmail(utente.getEmail());
+        response.setNome(utente.getNome());
+        response.setCognome(utente.getCognome());
+        response.setAvatar(utente.getAvatar());
+        response.setAnnoNascita(utente.getAnnoNascita());
+        response.setLuogoNascita(utente.getLuogoNascita());
+        response.setResidenza(utente.getResidenza());
+        response.setNomeCompagnia(utente.getNomeCompagnia());
+        response.setLingua(utente.getLingua());
+        // Nota: escludiamo la password per sicurezza
+        return response;
     }
 
+    //ALTRI METODI
     public Optional<Utente> findByUsername(String username) {
         return utenteRepository.findByUsername(username);
     }
@@ -78,21 +111,6 @@ public class UtenteService {
             throw new SecurityException("Credenziali non valide", e);
         }
     }
-    public CommonResponse createUtente(UtenteRequest request) throws MessagingException {
-        Utente utente= new Utente();
-        BeanUtils.copyProperties(request, utente);
-        if (utenteRepository.existsByUsername(utente.getUsername())) {
-            throw new UsernameException("Username già in uso");
-        }
-        if (utenteRepository.existsByEmail(utente.getEmail())) {
-            throw new UsernameException("Email già in uso");
-        }
-        utente.setAvatar("https://ui-avatars.com/api/?name=" + utente.getNome() + "+" + utente.getCognome());
-        utente = utenteRepository.save(utente);
-        emailSenderService.sendEmail(utente.getEmail(), "Benvenuto", "Ciao "+utente.getNome() + " " + utente.getCognome()+"! Benvenuto nella nostra azienda!" );
-        return new CommonResponse(utente.getId());
-    }
-
 
 
     public List<Utente> getAllUtenti() {return utenteRepository.findAll();}
@@ -119,11 +137,24 @@ public class UtenteService {
         return utenteRepository.existsByUsername(username);
     }
 
-    public void uploadImage(Long id, MultipartFile file) {
-        Utente utente= utenteRepository.findById(id).orElseThrow(() -> new NotFoundException("Utente non trovato"));
-        utente.setAvatar(cloudinaryService.uploadImage(file));
+    public String uploadImage(Long id, MultipartFile file) {
+        // Trova l'utente nel database
+        Utente utente = utenteRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Utente non trovato"));
+
+        // Carica l'immagine su Cloudinary e ottieni l'URL
+        String avatarUrl = cloudinaryService.uploadImage(file);
+
+        // Aggiorna l'avatar dell'utente con l'URL dell'immagine
+        utente.setAvatar(avatarUrl);
+
+        // Salva l'utente con il nuovo avatar nel database
         utenteRepository.save(utente);
+
+        // Restituisci l'URL dell'avatar caricato
+        return avatarUrl;
     }
+
 
 
 }

@@ -1,5 +1,6 @@
 package it.epicode.Capstone.login.auth;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.epicode.Capstone.login.authGoogle.CustomOAuth2UserService;
 import it.epicode.Capstone.login.authGoogle.UtenteGoogle;
 import it.epicode.Capstone.login.authGoogle.UtenteGoogleRepository;
@@ -29,7 +30,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -127,13 +130,24 @@ public class SecurityConfig {
                             };
 
                             String jwt = jwtTokenUtil.generateToken(userDetails);
-                            String avatar = utenteGoogle.getAvatar() != null ? utenteGoogle.getAvatar() : "";
-                            String encodedAvatar = URLEncoder.encode(avatar, StandardCharsets.UTF_8.toString());
-                            response.sendRedirect("http://localhost:5173/login-success?token=" + jwt + "&avatar=" + encodedAvatar);
+                            Map<String,String> payload = Map.of(
+                                    "token", jwt,
+                                    "id", utenteGoogle.getId().toString(),
+                                    "username", utenteGoogle.getEmail(),
+                                    "email", utenteGoogle.getEmail(),
+                                    "nome", utenteGoogle.getNome(),
+                                    "avatar", utenteGoogle.getAvatar()
+                            );
+                            ObjectMapper mapper = new ObjectMapper();
+                            String json = mapper.writeValueAsString(payload);
+                            String b64 = Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
+                            String encoded = URLEncoder.encode(b64, StandardCharsets.UTF_8.toString());
+                            String redirectUrl = "http://localhost:5173/login-success?data=" + encoded;
+                            response.sendRedirect(redirectUrl);
                         })
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // Consenti sempre l’accesso alle URL OAuth2
+
                         .anyRequest().permitAll()
                 );
 

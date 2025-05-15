@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URLEncoder;
 import java.util.Map;
 
 @RestController
@@ -23,9 +24,11 @@ public class AuthController {
         return ResponseEntity.ok(Map.of(
                 "email", principal.getAttribute("email"),
                 "name", principal.getAttribute("name"),
-                "picture", principal.getAttribute("picture"),
-                "attributes", principal.getAttributes() // Debug aggiuntivo
+                "avatar", principal.getAttribute("picture"),
+                "attributes", principal.getAttributes()
         ));
+
+
     }
 
 }
