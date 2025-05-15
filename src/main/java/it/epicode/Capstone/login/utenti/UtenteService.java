@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -84,7 +85,7 @@ public class UtenteService {
         response.setNome(utente.getNome());
         response.setCognome(utente.getCognome());
         response.setAvatar(utente.getAvatar());
-        response.setAnnoNascita(utente.getAnnoNascita());
+        response.setDataNascita(utente.getDataNascita());
         response.setLuogoNascita(utente.getLuogoNascita());
         response.setResidenza(utente.getResidenza());
         response.setNomeCompagnia(utente.getNomeCompagnia());

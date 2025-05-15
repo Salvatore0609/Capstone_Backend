@@ -10,11 +10,12 @@ import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 
 @Entity
-@Table(name = "Utente")
+@Table(name = "Utenti")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -39,7 +40,7 @@ public class Utente implements UserDetails {
     @Column(length = 500)
     private String avatar;
     @Column
-    private Integer annoNascita;
+    private LocalDate dataNascita;
     @Column
     private String luogoNascita;
     @Column
