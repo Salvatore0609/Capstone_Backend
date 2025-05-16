@@ -17,5 +17,5 @@ public class ProjectResponse {
     private String indirizzo;
     Double lat;
     Double lng;
-    Map<String, String> phases;
+
 }

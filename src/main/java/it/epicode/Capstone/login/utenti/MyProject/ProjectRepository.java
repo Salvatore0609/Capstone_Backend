@@ -7,5 +7,6 @@ import java.util.Optional;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findByProprietarioId(Long proprietarioId);
+    List<Project> findByProprietarioGoogleId(Long proprietarioGoogleId);
 
 }

@@ -22,37 +22,37 @@ public class ProjectController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ProjectResponse> create(
             @Valid @RequestBody ProjectRequest req,
-            @AuthenticationPrincipal Utente utente) {
-        return ResponseEntity.ok(projectService.create(req, utente));
+            @AuthenticationPrincipal Object user) {
+        return ResponseEntity.ok(projectService.create(req, user));
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<ProjectResponse>> list(
-            @AuthenticationPrincipal Utente utente) {
-        return ResponseEntity.ok(projectService.listByUser(utente));
+            @AuthenticationPrincipal Object user) {
+        return ResponseEntity.ok(projectService.listByUser(user));
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<ProjectResponse> getOne(
             @PathVariable Long id,
-            @AuthenticationPrincipal Utente utente) {
-        return ResponseEntity.ok(projectService.getById(id, utente));
+            @AuthenticationPrincipal Object user) {
+        return ResponseEntity.ok(projectService.getById(id, user));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProjectResponse> update(
             @PathVariable Long id,
             @Valid @RequestBody ProjectRequest req,
-            @AuthenticationPrincipal Utente utente) {
-
-        return ResponseEntity.ok(projectService.updateProject(id, req, utente));
+            @AuthenticationPrincipal Object user) {
+        return ResponseEntity.ok(projectService.updateProject(id, req, user));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_USER') or hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Void> deleteProject(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            Principal principal) {
         projectService.deleteProject(id, principal.getName());
         return ResponseEntity.noContent().build();
     }

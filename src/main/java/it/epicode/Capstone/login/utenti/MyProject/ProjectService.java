@@ -1,5 +1,6 @@
 package it.epicode.Capstone.login.utenti.MyProject;
 
+import it.epicode.Capstone.login.authGoogle.UtenteGoogle;
 import it.epicode.Capstone.login.utenti.Utente;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ import java.util.List;
 public class ProjectService {
     private final ProjectRepository pRepo;
 
-    public ProjectResponse create(ProjectRequest req, Utente utente) {
+    public ProjectResponse create(ProjectRequest req, Object user) {
         Project p = new Project();
         p.setNomeProgetto(req.getNomeProgetto());
         p.setProgettista(req.getProgettista());
@@ -25,49 +26,87 @@ public class ProjectService {
         p.setIndirizzo(req.getIndirizzo());
         p.setLat(req.getLat());
         p.setLng(req.getLng());
-        p.setPhases(req.getPhases());
-        p.setProprietario(utente);
-        Project saved = pRepo.save(p);
-        return mapToResponse(saved);
+
+        if (user instanceof Utente utente) {
+            p.setProprietario(utente);
+        } else if (user instanceof UtenteGoogle utenteGoogle) {
+            p.setProprietarioGoogle(utenteGoogle);
+        }
+
+        return mapToResponse(pRepo.save(p));
     }
 
-    public List<ProjectResponse> listByUser(Utente utente) {
-        return pRepo.findByProprietarioId(utente.getId())
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
+    public List<ProjectResponse> listByUser(Object user) {
+        if (user instanceof Utente utente) {
+            return pRepo.findByProprietarioId(utente.getId())
+                    .stream()
+                    .map(this::mapToResponse)
+                    .toList();
+        } else if (user instanceof UtenteGoogle utenteGoogle) {
+            return pRepo.findByProprietarioGoogleId(utenteGoogle.getId())
+                    .stream()
+                    .map(this::mapToResponse)
+                    .toList();
+        }
+        return List.of();
     }
 
-    public ProjectResponse getById(Long id, Utente utente) {
+    public ProjectResponse getById(Long id, Object user) {
         Project p = pRepo.findById(id)
-                .filter(prj -> prj.getProprietario().getId().equals(utente.getId()))
+                .filter(proj -> {
+                    if (user instanceof Utente utente) {
+                        return proj.getProprietario() != null &&
+                                proj.getProprietario().getId().equals(utente.getId());
+                    } else if (user instanceof UtenteGoogle utenteGoogle) {
+                        return proj.getProprietarioGoogle() != null &&
+                                proj.getProprietarioGoogle().getId().equals(utenteGoogle.getId());
+                    }
+                    return false;
+                })
                 .orElseThrow(() -> new RuntimeException("Progetto non trovato o non autorizzato"));
         return mapToResponse(p);
     }
 
-    public ProjectResponse updateProject(Long id, ProjectRequest req, Utente utente) {
-        Project existing = pRepo.findById(id)
+    public ProjectResponse updateProject(Long id, ProjectRequest req, Object user) {
+        Project project = pRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Progetto non trovato"));
-        if (!existing.getProprietario().getId().equals(utente.getId())) {
-            throw new AccessDeniedException("Non autorizzato ad aggiornare questo progetto");
+
+        boolean isAuthorized = false;
+        if (user instanceof Utente utente) {
+            isAuthorized = project.getProprietario() != null &&
+                    project.getProprietario().getId().equals(utente.getId());
+        } else if (user instanceof UtenteGoogle utenteGoogle) {
+            isAuthorized = project.getProprietarioGoogle() != null &&
+                    project.getProprietarioGoogle().getId().equals(utenteGoogle.getId());
         }
-        existing.setNomeProgetto(req.getNomeProgetto());
-        existing.setProgettista(req.getProgettista());
-        existing.setImpresaCostruttrice(req.getImpresaCostruttrice());
-        existing.setIndirizzo(req.getIndirizzo());
-        existing.setLat(req.getLat());
-        existing.setLng(req.getLng());
-        existing.setPhases(req.getPhases());
-        Project saved = pRepo.save(existing);
-        return mapToResponse(saved);
+
+        if (!isAuthorized) throw new AccessDeniedException("Non autorizzato");
+
+        project.setNomeProgetto(req.getNomeProgetto());
+        project.setProgettista(req.getProgettista());
+        project.setImpresaCostruttrice(req.getImpresaCostruttrice());
+        project.setIndirizzo(req.getIndirizzo());
+        project.setLat(req.getLat());
+        project.setLng(req.getLng());
+
+        return mapToResponse(pRepo.save(project));
     }
 
     public void deleteProject(Long id, String email) {
         Project project = pRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Progetto non trovato"));
-        if (!project.getProprietario().getEmail().equals(email)) {
+
+        String ownerEmail = null;
+        if (project.getProprietario() != null) {
+            ownerEmail = project.getProprietario().getEmail();
+        } else if (project.getProprietarioGoogle() != null) {
+            ownerEmail = project.getProprietarioGoogle().getEmail();
+        }
+
+        if (!email.equals(ownerEmail)) {
             throw new AccessDeniedException("Non puoi eliminare questo progetto");
         }
+
         pRepo.delete(project);
     }
 
@@ -79,8 +118,7 @@ public class ProjectService {
                 p.getImpresaCostruttrice(),
                 p.getIndirizzo(),
                 p.getLat(),
-                p.getLng(),
-                p.getPhases()
+                p.getLng()
         );
     }
 }

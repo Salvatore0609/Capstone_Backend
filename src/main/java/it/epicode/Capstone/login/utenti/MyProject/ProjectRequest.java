@@ -21,5 +21,5 @@ public class ProjectRequest {
     private String indirizzo;
     Double lat;
     Double lng;
-    Map<String, String> phases;
+
 }
