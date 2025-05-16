@@ -20,4 +20,8 @@ public class SottozoneController {
     public ResponseEntity<List<SottozoneResponse>> getAllSottozone() {
         return ResponseEntity.ok(sottozoneService.findAllSottozone());
     }
+    @GetMapping("/{nome}")
+    public ResponseEntity<SottozoneResponse> getSottozoneByNome(String nome) {
+        return ResponseEntity.ok(sottozoneService.findByNome(nome));
+    }
 }

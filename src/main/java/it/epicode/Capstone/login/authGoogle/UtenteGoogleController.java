@@ -8,12 +8,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URLEncoder;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/utente")
-public class AuthController {
+public class UtenteGoogleController {
 
     @GetMapping("/login/google")
     public ResponseEntity<?> getUser(@AuthenticationPrincipal OAuth2User principal) {

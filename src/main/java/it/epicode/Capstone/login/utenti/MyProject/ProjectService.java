@@ -17,15 +17,18 @@ import java.util.List;
 @Transactional
 public class ProjectService {
     private final ProjectRepository pRepo;
+    private final GeocodingService geocodingService;
 
     public ProjectResponse create(ProjectRequest req, Object user) {
+        var coordinates = geocodingService.geocodeAddress(req.getIndirizzo());
+
         Project p = new Project();
         p.setNomeProgetto(req.getNomeProgetto());
         p.setProgettista(req.getProgettista());
         p.setImpresaCostruttrice(req.getImpresaCostruttrice());
         p.setIndirizzo(req.getIndirizzo());
-        p.setLat(req.getLat());
-        p.setLng(req.getLng());
+        p.setLat(coordinates.getLat());
+        p.setLng(coordinates.getLng());
 
         if (user instanceof Utente utente) {
             p.setProprietario(utente);
@@ -86,8 +89,6 @@ public class ProjectService {
         project.setProgettista(req.getProgettista());
         project.setImpresaCostruttrice(req.getImpresaCostruttrice());
         project.setIndirizzo(req.getIndirizzo());
-        project.setLat(req.getLat());
-        project.setLng(req.getLng());
 
         return mapToResponse(pRepo.save(project));
     }

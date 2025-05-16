@@ -2,6 +2,7 @@ package it.epicode.Capstone.login.utenti;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.epicode.Capstone.login.auth.Role;
+import it.epicode.Capstone.login.utenti.MyProject.Project;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -49,6 +51,9 @@ public class Utente implements UserDetails {
     private String nomeCompagnia;
     @Column
     private String lingua;
+
+    /*@OneToMany
+    private List<Project> projects;*/
 
     //tipo utente
     @ElementCollection(fetch = FetchType.EAGER)

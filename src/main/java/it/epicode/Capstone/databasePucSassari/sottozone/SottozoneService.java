@@ -19,6 +19,14 @@ public class SottozoneService {
                 .map(this::mapToResponse)  // Puoi lasciare il mapping se vuoi mappare la risposta
                 .toList();
     }
+    // Recupera una sottozona per nome
+    public SottozoneResponse findByNome(String nome) {
+        Sottozona sottozona = sRepo.findByNome(nome);
+        if (sottozona == null) {
+            throw new RuntimeException("Sottozona non trovata");
+        }
+        return mapToResponse(sottozona);
+    }
 
     // Mappa una Sottozona in SottozoneResponse DTO
     private SottozoneResponse mapToResponse(Sottozona sottozona) {

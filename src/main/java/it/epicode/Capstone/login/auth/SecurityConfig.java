@@ -141,7 +141,7 @@ public class SecurityConfig {
                             ObjectMapper mapper = new ObjectMapper();
                             String json = mapper.writeValueAsString(payload);
                             String b64 = Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
-                            String encoded = URLEncoder.encode(b64, StandardCharsets.UTF_8.toString());
+                            String encoded = URLEncoder.encode(b64, StandardCharsets.UTF_8);
                             String redirectUrl = "http://localhost:5173/login-success?data=" + encoded;
                             response.sendRedirect(redirectUrl);
                         })
@@ -164,7 +164,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/utenti/login", "/utenti/register",
-                                "/oauth2/**").permitAll() // 👈 Permetti l'accesso senza autenticazione
+                                "/oauth2/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
@@ -189,7 +189,7 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider auth = new DaoAuthenticationProvider();
-        auth.setUserDetailsService(customUserDetailsService); // metti il tuo customUserDetailsService qui se serve
+        auth.setUserDetailsService(customUserDetailsService);
         auth.setPasswordEncoder(passwordEncoder());
         return auth;
     }

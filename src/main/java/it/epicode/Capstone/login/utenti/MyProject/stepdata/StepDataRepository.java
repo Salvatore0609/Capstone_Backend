@@ -6,5 +6,10 @@ import java.util.List;
 
 public interface StepDataRepository extends JpaRepository<StepData, Long> {
     List<StepData> findByProgettoId(Long projectId);
-    List<StepData> findByProprietarioGoogleId(Long proprietarioGoogleId);
+
+    // Cerca tramite il proprietario del progetto (Utente tradizionale)
+    List<StepData> findByProgetto_Proprietario_Id(Long proprietarioId);
+
+    // Cerca tramite il proprietario Google del progetto
+    List<StepData> findByProgetto_ProprietarioGoogle_Id(Long proprietarioGoogleId);
 }

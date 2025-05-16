@@ -15,7 +15,7 @@ public class ProjectResponse {
     private String progettista;
     private String impresaCostruttrice;
     private String indirizzo;
-    Double lat;
-    Double lng;
+    private Double lat;
+    private Double lng;
 
 }

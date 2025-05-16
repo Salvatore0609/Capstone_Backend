@@ -29,8 +29,8 @@ public class StepDataService {
     private final TaskRepository taskRepository;
     private final StepRepository stepRepository;
 
-    private final UtenteRepository utenteRepository;
-    private final UtenteGoogleRepository utenteGoogleRepository;
+    /*private final UtenteRepository utenteRepository;
+    private final UtenteGoogleRepository utenteGoogleRepository;*/
 
     private final CloudinaryService cloudinaryService;
 
@@ -70,6 +70,18 @@ public class StepDataService {
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+
+    public List<StepDataResponse> getStepDataByGoogleUser(Long googleUserId) {
+        return stepDataRepository.findByProgetto_ProprietarioGoogle_Id(googleUserId)
+                .stream().map(this::toResponse).toList();
+    }
+
+
+    public List<StepDataResponse> getStepDataByUser(Long userId) {
+        return stepDataRepository.findByProgetto_Proprietario_Id(userId)
+                .stream().map(this::toResponse).toList();
     }
 
     public StepDataResponse saveOrUpdateStepData(StepDataRequest request, Object user) {

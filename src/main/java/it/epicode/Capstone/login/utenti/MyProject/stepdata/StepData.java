@@ -49,5 +49,6 @@ public class StepData {
     private String dropdownSelected;
     private Boolean checkboxValue;
 
+    //LA DATA DELL'ULTIMO AGGIORNAMENTO
     private LocalDateTime updatedAt;
 }

@@ -15,7 +15,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class DataLoader implements CommandLineRunner {
+public class DataLoaderPuc implements CommandLineRunner {
 
     private final ArticoloService articoloService;
     private final ObjectMapper objectMapper;

@@ -19,7 +19,6 @@ public class ProjectRequest {
     private String impresaCostruttrice;
     @NotBlank
     private String indirizzo;
-    Double lat;
-    Double lng;
+
 
 }

@@ -1,11 +1,13 @@
 package it.epicode.Capstone.login.authGoogle;
 
 import it.epicode.Capstone.login.auth.Role;
+import it.epicode.Capstone.login.utenti.MyProject.Project;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -24,6 +26,9 @@ public class UtenteGoogle {
     private String nome;
 
     private String avatar;
+
+    /*@OneToMany
+    private List<Project> projects;*/
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)

@@ -1,6 +1,9 @@
 package it.epicode.Capstone.login.utenti.MyProject.stepdata;
 
+import it.epicode.Capstone.login.authGoogle.UtenteGoogle;
+import it.epicode.Capstone.login.utenti.Utente;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +35,24 @@ public class StepDataController {
     public ResponseEntity<List<StepDataResponse>> getStepDataForProject(@RequestParam Long projectId) {
         List<StepDataResponse> dataList = stepDataService.listByProject(projectId);
         return ResponseEntity.ok(dataList);
+    }
+
+    @GetMapping("/my-steps")
+    public ResponseEntity<List<StepDataResponse>> getMyStepData(
+            @AuthenticationPrincipal Object user) {
+
+        if (user instanceof UtenteGoogle googleUser) {
+            return ResponseEntity.ok(
+                    stepDataService.getStepDataByGoogleUser(googleUser.getId())
+            );
+        }
+        else if (user instanceof Utente tradUser) {
+            return ResponseEntity.ok(
+                    stepDataService.getStepDataByUser(tradUser.getId())
+            );
+        }
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     @PostMapping
