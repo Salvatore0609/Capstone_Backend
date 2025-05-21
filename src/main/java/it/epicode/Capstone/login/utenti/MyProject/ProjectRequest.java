@@ -19,6 +19,6 @@ public class ProjectRequest {
     private String impresaCostruttrice;
     @NotBlank
     private String indirizzo;
-
+    private Boolean completato;
 
 }

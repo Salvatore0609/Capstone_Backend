@@ -164,7 +164,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/utenti/login", "/utenti/register",
-                                "/oauth2/**").permitAll()
+                                "/oauth2/**", "/geocode").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))

@@ -6,6 +6,7 @@ import it.epicode.Capstone.login.auth.AuthResponse;
 import it.epicode.Capstone.login.auth.LoginRequest;
 import it.epicode.Capstone.login.common.CommonResponse;
 import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,7 @@ public class UtenteController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/current-user")
+    @Transactional
     public Utente getCurrentUser(@AuthenticationPrincipal Utente utente) {
         System.out.println("Utente corrente: " + utente);
         return utente;

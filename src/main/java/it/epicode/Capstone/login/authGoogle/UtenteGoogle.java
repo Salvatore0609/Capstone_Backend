@@ -1,5 +1,6 @@
 package it.epicode.Capstone.login.authGoogle;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.epicode.Capstone.login.auth.Role;
 import it.epicode.Capstone.login.utenti.MyProject.Project;
 import jakarta.persistence.*;
@@ -27,8 +28,8 @@ public class UtenteGoogle {
 
     private String avatar;
 
-    /*@OneToMany
-    private List<Project> projects;*/
+    @OneToMany(mappedBy = "proprietarioGoogle", fetch = FetchType.EAGER)
+    private List<Project> projects;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)

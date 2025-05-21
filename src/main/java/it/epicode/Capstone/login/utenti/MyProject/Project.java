@@ -7,7 +7,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -37,6 +39,11 @@ public class Project {
     @Column
     private Double lng;
 
+    @Column
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+    @Column
+    private Boolean completato = false;
 
     @ManyToOne
     @JoinColumn(name = "utente_id")

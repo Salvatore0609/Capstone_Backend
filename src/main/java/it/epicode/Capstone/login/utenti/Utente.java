@@ -12,6 +12,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -52,8 +53,8 @@ public class Utente implements UserDetails {
     @Column
     private String lingua;
 
-    /*@OneToMany
-    private List<Project> projects;*/
+    @OneToMany(mappedBy = "proprietario", fetch = FetchType.EAGER)
+    private List<Project> projects;
 
     //tipo utente
     @ElementCollection(fetch = FetchType.EAGER)

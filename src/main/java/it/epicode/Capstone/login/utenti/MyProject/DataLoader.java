@@ -117,58 +117,61 @@ public class DataLoader implements CommandLineRunner{
                 new Step(null, "Note sui preventivi ricevuti dalle imprese", "textarea,file", "Inserisci considerazioni o allega documenti…", ".pdf", t4_2),
 
                 new Step(null, "Carica valutazione e schede imprese selezionate", "file", null, ".pdf", t4_3),
-                new Step(null, "Inserisci motivazioni della scelta", "textarea", "Motivazioni…", null, t4_3),
+                new Step(null, "Stipula del contratto d'appalto", "file", null, ".pdf", t4_3),
 
                 new Step(null, "Carica PSC e documenti di sicurezza", "file", null, ".pdf", t4_4),
-                new Step(null, "Conferma formazione addetti alla sicurezza", "boolean", null, null, t4_4),
-                new Step(null, "Verifica aggiornamenti normativi in materia di sicurezza", "link", "Normativa INAIL", null, t4_4)
+                new Step(null, "Nomina del Coordinatore per la Sicurezza", "file", null, ".pdf", t4_4)
         ));
 
         // ------------------------------------
         // FASE 5: DIREZIONE LAVORI & CANTIERE
         Fase fase5 = fasi.get(4);
-        Task t5_1 = new Task(null, "Coordinamento e Controllo Cantiere", null, fase5, null);
-        Task t5_2 = new Task(null, "Gestione Varianti", null, fase5, null);
-        Task t5_3 = new Task(null, "Collaudo e Verifiche Finali", null, fase5, null);
-        Task t5_4 = new Task(null, "Documentazione di Cantiere", null, fase5, null);
-        taskRepo.saveAll(List.of(t5_1,t5_2,t5_3,t5_4));
+        Task t5_1 = new Task(null, "Apertura del Cantiere", null, fase5, null);
+        Task t5_2 = new Task(null, "Supervisione e Controllo dei Lavori", null, fase5, null);
+        Task t5_3 = new Task(null, "Sicurezza in Cantiere", null, fase5, null);
+        Task t5_4 = new Task(null, "Certificazioni e Collaudi", null, fase5, null);
+        taskRepo.saveAll(List.of(t5_1, t5_2, t5_3, t5_4));
 
         stepRepo.saveAll(List.of(
-                new Step(null, "Relazioni giornaliere e report di avanzamento", "textarea,file", "Scrivi relazioni o allega foto…", ".pdf,.jpg,.png", t5_1),
-                new Step(null, "Controllo qualità materiali e lavorazioni", "file", null, ".pdf", t5_1),
 
-                new Step(null, "Descrivi varianti progettuali e motivazioni", "textarea", null, null, t5_2),
-                new Step(null, "Carica documentazione approvata per varianti", "file", null, ".pdf", t5_2),
+                new Step(null, "Comunicazione dell’inizio dei lavori al Comune (CILA/SCIA)", "file", null, ".pdf", t5_1),
+                new Step(null, "Nomina del Direttore dei Lavori", "file", null, ".pdf", t5_1),
 
-                new Step(null, "Carica verbali di collaudo", "file", null, ".pdf", t5_3),
-                new Step(null, "Valutazione conformità impianti e strutture", "file", null, ".pdf", t5_3),
-                new Step(null, "Check lista verifica conformità normativa", "boolean", null, null, t5_3),
 
-                new Step(null, "Archivio documenti di cantiere (contratti, certificati, etc.)", "file", null, ".pdf,.docx", t5_4),
-                new Step(null, "Registro presenze e sicurezza operai", "file", null, ".xls,.xlsx", t5_4),
-                new Step(null, "Foto aggiornamenti stato avanzamento lavori", "file", null, ".jpg,.png", t5_4)
+                new Step(null, "Report di monitoraggio lavori in corso", "textarea,file", "Descrivi lo stato di avanzamento dei lavori...", ".pdf,.docx", t5_2),
+                new Step(null, "Aggiornamento computo metrico (SAL)", "file", null, ".xls,.xlsx,.pdf", t5_2),
+
+
+                new Step(null, "Verifica utilizzo DPI e misure di sicurezza", "boolean", null, null, t5_3),
+                new Step(null, "Documentazione sul rispetto normative sicurezza (D.Lgs. 81/08)", "file", null, ".pdf", t5_3),
+
+
+                new Step(null, "Collaudo strutturale e impiantistico", "file", null, ".pdf", t5_4),
+                new Step(null, "Attestato di Prestazione Energetica (APE) e certificazioni varie", "file", null, ".pdf", t5_4)
         ));
 
         // ------------------------------------
         // FASE 6: FINE LAVORI & AGGIORNAMENTI CATASTALI
         Fase fase6 = fasi.get(5);
-        Task t6_1 = new Task(null, "Verifica Documentazione Finale", null, fase6, null);
-        Task t6_2 = new Task(null, "Aggiornamenti Catastali", null, fase6, null);
-        Task t6_3 = new Task(null, "Archiviazione e Consegna al Cliente", null, fase6, null);
-        taskRepo.saveAll(List.of(t6_1,t6_2,t6_3));
+        Task t6_1 = new Task(null, "Comunicazione di Fine Lavori", null, fase6, null);
+        Task t6_2 = new Task(null, "Aggiornamento Catastale e Richiesta di Agibilità", null, fase6, null);
+        Task t6_3 = new Task(null, "Consegna del Progetto al Cliente", null, fase6, null);
+        taskRepo.saveAll(List.of(t6_1, t6_2, t6_3));
 
         stepRepo.saveAll(List.of(
-                new Step(null, "Controllo completezza certificati e collaudi", "boolean", null, null, t6_1),
-                new Step(null, "Carica documentazione di chiusura lavori", "file", null, ".pdf", t6_1),
 
-                new Step(null, "Aggiorna planimetrie catastali", "file", null, ".pdf,.dwg", t6_2),
-                new Step(null, "Invia pratiche di aggiornamento al Catasto", "file", null, ".pdf", t6_2),
-                new Step(null, "Conferma ricezione visure aggiornate", "boolean", null, null, t6_2),
+                new Step(null, "Notifica ufficiale di fine lavori al Comune", "file", null, ".pdf", t6_1),
+                new Step(null, "Deposito della documentazione finale", "file", null, ".pdf,.zip", t6_1),
 
-                new Step(null, "Archivia documenti finali progetto", "file", null, ".pdf,.docx", t6_3),
-                new Step(null, "Consegna documentazione e chiavi al cliente", "boolean", null, null, t6_3),
-                new Step(null, "Feedback finale cliente", "textarea", "Annota qui eventuali commenti", null, t6_3)
+
+                new Step(null, "Documento di aggiornamento catastale", "file", null, ".pdf,.xml", t6_2),
+                new Step(null, "Richiesta di certificazione di agibilità", "file", null, ".pdf", t6_2),
+
+
+                new Step(null, "Documentazione tecnica e legale", "file", null, ".pdf,.zip", t6_3),
+                new Step(null, "Manuali d’uso, manutenzione e garanzie", "file", null, ".pdf,.zip", t6_3)
         ));
+
 
         System.out.println("fasi, task e step COMPLETATO!");
     }

@@ -18,38 +18,47 @@ import java.util.List;
 public class ProjectController {
     private final ProjectService projectService;
 
+    // Create (POST /projects)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ProjectResponse> create(
+    public ProjectResponse create(
             @Valid @RequestBody ProjectRequest req,
-            @AuthenticationPrincipal Object user) {
-        return ResponseEntity.ok(projectService.create(req, user));
+            Principal principal) {
+        return projectService.create(req, principal.getName());
     }
 
+    // List (GET /projects)
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<ProjectResponse>> list(
-            @AuthenticationPrincipal Object user) {
-        return ResponseEntity.ok(projectService.listByUser(user));
+    public List<ProjectResponse> list(Principal principal) {
+        return projectService.listByUser(principal.getName());
     }
 
+    // Get single (GET /projects/{id})
     @GetMapping("/{id}")
-    public ResponseEntity<ProjectResponse> getOne(
+    public ProjectResponse getOne(
             @PathVariable Long id,
-            @AuthenticationPrincipal Object user) {
-        return ResponseEntity.ok(projectService.getById(id, user));
+            Principal principal) {
+        return projectService.getById(id, principal.getName());
     }
 
+    //Endpoint per ottenere il solo numero di completati
+    @GetMapping("/count-completati")
+    public long countCompletati(Principal principal) {
+        return projectService.countCompletatiByUser(principal.getName());
+    }
+
+    // Update (PUT /projects/{id})
     @PutMapping("/{id}")
-    public ResponseEntity<ProjectResponse> update(
+    public ProjectResponse update(
             @PathVariable Long id,
             @Valid @RequestBody ProjectRequest req,
-            @AuthenticationPrincipal Object user) {
-        return ResponseEntity.ok(projectService.updateProject(id, req, user));
+            Principal principal) {
+        return projectService.updateProject(id, req, principal.getName());
     }
 
+    // Delete (DELETE /projects/{id})
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_USER') or hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
             Principal principal) {

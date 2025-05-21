@@ -1,7 +1,9 @@
 package it.epicode.Capstone.login.utenti.MyProject;
 
 import it.epicode.Capstone.login.authGoogle.UtenteGoogle;
+import it.epicode.Capstone.login.authGoogle.UtenteGoogleRepository;
 import it.epicode.Capstone.login.utenti.Utente;
+import it.epicode.Capstone.login.utenti.UtenteRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -18,10 +20,22 @@ import java.util.List;
 public class ProjectService {
     private final ProjectRepository pRepo;
     private final GeocodingService geocodingService;
+    private final UtenteRepository utenteRepo;
+    private final UtenteGoogleRepository utenteGoogleRepo;
 
-    public ProjectResponse create(ProjectRequest req, Object user) {
+    // Creazione progetto
+    public ProjectResponse create(ProjectRequest req, String username) {
         var coordinates = geocodingService.geocodeAddress(req.getIndirizzo());
 
+        // Trova l’utente: prima utente “normale”, se non esiste cerca Google
+        Utente utente = utenteRepo.findByUsername(username).orElse(null);
+        UtenteGoogle utenteGoogle = null;
+        if (utente == null) {
+            utenteGoogle = utenteGoogleRepo.findByEmail(username)
+                    .orElseThrow(() -> new RuntimeException("Utente non trovato"));
+        }
+
+        // Costruisci il progetto
         Project p = new Project();
         p.setNomeProgetto(req.getNomeProgetto());
         p.setProgettista(req.getProgettista());
@@ -30,87 +44,125 @@ public class ProjectService {
         p.setLat(coordinates.getLat());
         p.setLng(coordinates.getLng());
 
-        if (user instanceof Utente utente) {
+        // Associa il proprietario giusto
+        if (utente != null) {
             p.setProprietario(utente);
-        } else if (user instanceof UtenteGoogle utenteGoogle) {
+        } else {
             p.setProprietarioGoogle(utenteGoogle);
         }
 
         return mapToResponse(pRepo.save(p));
     }
 
-    public List<ProjectResponse> listByUser(Object user) {
-        if (user instanceof Utente utente) {
-            return pRepo.findByProprietarioId(utente.getId())
-                    .stream()
-                    .map(this::mapToResponse)
-                    .toList();
-        } else if (user instanceof UtenteGoogle utenteGoogle) {
-            return pRepo.findByProprietarioGoogleId(utenteGoogle.getId())
-                    .stream()
-                    .map(this::mapToResponse)
-                    .toList();
+    // Lista progetti per utente (normale o Google)
+    public List<ProjectResponse> listByUser(String username) {
+        // Stessa logica: prima utente normale
+        Utente utente = utenteRepo.findByUsername(username).orElse(null);
+        if (utente != null) {
+            List<Project> projects = pRepo.findByProprietarioIdOrderByCreatedAtDesc(utente.getId());
+            return projects.stream().map(this::mapToResponse).toList();
         }
-        return List.of();
+        // Altrimenti Google
+        UtenteGoogle utenteGoogle = utenteGoogleRepo.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("Utente Google non trovato"));
+        List<Project> projects = pRepo.findByProprietarioGoogleIdOrderByCreatedAtDesc(utenteGoogle.getId());
+        return projects.stream().map(this::mapToResponse).toList();
     }
 
-    public ProjectResponse getById(Long id, Object user) {
+    // Recupera singolo progetto (controllo di proprietà)
+    public ProjectResponse getById(Long id, String username) {
+        Utente utente = utenteRepo.findByUsername(username).orElse(null);
+        UtenteGoogle utenteGoogle;
+        if (utente == null) {
+            utenteGoogle = utenteGoogleRepo.findByEmail(username)
+                    .orElseThrow(() -> new RuntimeException("Utente Google non trovato"));
+        } else {
+            utenteGoogle = null;
+        }
+
         Project p = pRepo.findById(id)
                 .filter(proj -> {
-                    if (user instanceof Utente utente) {
+                    if (utente != null) {
                         return proj.getProprietario() != null &&
                                 proj.getProprietario().getId().equals(utente.getId());
-                    } else if (user instanceof UtenteGoogle utenteGoogle) {
+                    } else {
                         return proj.getProprietarioGoogle() != null &&
                                 proj.getProprietarioGoogle().getId().equals(utenteGoogle.getId());
                     }
-                    return false;
                 })
                 .orElseThrow(() -> new RuntimeException("Progetto non trovato o non autorizzato"));
+
         return mapToResponse(p);
     }
 
-    public ProjectResponse updateProject(Long id, ProjectRequest req, Object user) {
+    // Aggiorna progetto (controllo di proprietà)
+    public ProjectResponse updateProject(Long id, ProjectRequest req, String username) {
+        Utente utente = utenteRepo.findByUsername(username).orElse(null);
+        UtenteGoogle utenteGoogle = null;
+        if (utente == null) {
+            utenteGoogle = utenteGoogleRepo.findByEmail(username)
+                    .orElseThrow(() -> new RuntimeException("Utente Google non trovato"));
+        }
+
         Project project = pRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Progetto non trovato"));
 
-        boolean isAuthorized = false;
-        if (user instanceof Utente utente) {
-            isAuthorized = project.getProprietario() != null &&
-                    project.getProprietario().getId().equals(utente.getId());
-        } else if (user instanceof UtenteGoogle utenteGoogle) {
-            isAuthorized = project.getProprietarioGoogle() != null &&
-                    project.getProprietarioGoogle().getId().equals(utenteGoogle.getId());
-        }
+        boolean isAuthorized = (utente != null && project.getProprietario() != null &&
+                project.getProprietario().getId().equals(utente.getId()))
+                || (utenteGoogle != null && project.getProprietarioGoogle() != null &&
+                project.getProprietarioGoogle().getId().equals(utenteGoogle.getId()));
 
-        if (!isAuthorized) throw new AccessDeniedException("Non autorizzato");
+        if (!isAuthorized) {
+            throw new AccessDeniedException("Non autorizzato");
+        }
 
         project.setNomeProgetto(req.getNomeProgetto());
         project.setProgettista(req.getProgettista());
         project.setImpresaCostruttrice(req.getImpresaCostruttrice());
         project.setIndirizzo(req.getIndirizzo());
 
+        if (req.getCompletato() != null) {
+            project.setCompletato(req.getCompletato());
+        }
+
         return mapToResponse(pRepo.save(project));
     }
 
-    public void deleteProject(Long id, String email) {
+    // Elimina progetto (controllo di proprietà)
+    public void deleteProject(Long id, String username) {
+        Utente utente = utenteRepo.findByUsername(username).orElse(null);
+        UtenteGoogle utenteGoogle = null;
+        if (utente == null) {
+            utenteGoogle = utenteGoogleRepo.findByEmail(username)
+                    .orElseThrow(() -> new RuntimeException("Utente Google non trovato"));
+        }
+
         Project project = pRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Progetto non trovato"));
 
-        String ownerEmail = null;
-        if (project.getProprietario() != null) {
-            ownerEmail = project.getProprietario().getEmail();
-        } else if (project.getProprietarioGoogle() != null) {
-            ownerEmail = project.getProprietarioGoogle().getEmail();
-        }
+        boolean isOwner = (utente != null && project.getProprietario() != null &&
+                project.getProprietario().getId().equals(utente.getId()))
+                || (utenteGoogle != null && project.getProprietarioGoogle() != null &&
+                project.getProprietarioGoogle().getId().equals(utenteGoogle.getId()));
 
-        if (!email.equals(ownerEmail)) {
+        if (!isOwner) {
             throw new AccessDeniedException("Non puoi eliminare questo progetto");
         }
 
         pRepo.delete(project);
     }
 
+    public long countCompletatiByUser(String username) {
+        Utente utente = utenteRepo.findByUsername(username).orElse(null);
+        if (utente != null) {
+            return pRepo.findByProprietarioIdAndCompletatoTrue(utente.getId()).size();
+        }
+        UtenteGoogle utenteGoogle = utenteGoogleRepo.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("Utente Google non trovato"));
+        return pRepo.findByProprietarioGoogleIdAndCompletatoTrue(utenteGoogle.getId()).size();
+    }
+
+    // Mapper di utilità
     private ProjectResponse mapToResponse(Project p) {
         return new ProjectResponse(
                 p.getId(),
@@ -119,7 +171,10 @@ public class ProjectService {
                 p.getImpresaCostruttrice(),
                 p.getIndirizzo(),
                 p.getLat(),
-                p.getLng()
+                p.getLng(),
+                p.getCreatedAt(),
+                p.getCompletato()
         );
     }
 }
+

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
@@ -17,5 +18,6 @@ public class ProjectResponse {
     private String indirizzo;
     private Double lat;
     private Double lng;
-
+    private LocalDateTime createdAt;
+    private Boolean completato;
 }

@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StepDataRequest {
-    @NotNull
-    private Long Id;
+
+    private Long id;
     @NotNull
     private Long projectId;
 
