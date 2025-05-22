@@ -53,8 +53,6 @@ public class Utente implements UserDetails {
     @Column
     private String lingua;
 
-    @OneToMany(mappedBy = "proprietario", fetch = FetchType.EAGER)
-    private List<Project> projects;
 
     //tipo utente
     @ElementCollection(fetch = FetchType.EAGER)

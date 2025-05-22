@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.List;
 import java.util.Set;
@@ -28,8 +29,6 @@ public class UtenteGoogle {
 
     private String avatar;
 
-    @OneToMany(mappedBy = "proprietarioGoogle", fetch = FetchType.EAGER)
-    private List<Project> projects;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)

@@ -23,6 +23,10 @@ public class StepDataRequest {
     @NotNull
     private Long stepId;
 
+    private String fileName;
+    private String fileType;
+    private Integer fileSize;
+    private String fileUrl;
     private String textareaValue;
     private String dropdownSelected;
     private Boolean checkboxValue;

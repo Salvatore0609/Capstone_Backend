@@ -3,6 +3,7 @@ package it.epicode.Capstone.cloudinary;
 import com.cloudinary.Cloudinary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -17,6 +18,16 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CloudinaryController {
     private final Cloudinary cloudinary;
+    private final CloudinaryService cloudinaryService;
+
+    @PostMapping(path = "/uploadRaw", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> uploadRaw(
+            @RequestPart("file") MultipartFile file) {
+
+        Map<String, String> uploadResult = cloudinaryService.uploadRawFile(file);
+
+        return ResponseEntity.ok(uploadResult);
+    }
 
     @PostMapping(path="/uploadme", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void upload(

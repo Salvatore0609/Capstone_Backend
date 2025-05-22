@@ -1,9 +1,12 @@
 package it.epicode.Capstone.login.utenti.MyProject.stepdata;
 
+
 import it.epicode.Capstone.login.authGoogle.UtenteGoogle;
 import it.epicode.Capstone.login.utenti.Utente;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -54,6 +57,8 @@ public class StepDataController {
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+
 
     @PostMapping
     public ResponseEntity<StepDataResponse> saveStepData(

@@ -142,7 +142,7 @@ public class SecurityConfig {
                             String json = mapper.writeValueAsString(payload);
                             String b64 = Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
                             String encoded = URLEncoder.encode(b64, StandardCharsets.UTF_8);
-                            String redirectUrl = "http://localhost:5173/login-success?data=" + encoded;
+                            String redirectUrl = "http://localhost:5173/login-google-success?data=" + encoded;
                             response.sendRedirect(redirectUrl);
                         })
                 )

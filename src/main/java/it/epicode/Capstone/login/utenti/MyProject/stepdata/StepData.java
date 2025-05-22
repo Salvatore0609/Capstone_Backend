@@ -42,6 +42,7 @@ public class StepData {
     private Step step;
 
     private String fileName;
+    private String fileUrl;
     private String fileType;
     private Integer fileSize;
 

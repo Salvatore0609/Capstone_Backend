@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,7 +43,11 @@ public class StepDataService {
             Long stepId,
             Object user) {
 
-        String url = cloudinaryService.uploadImage(file);
+        // Ora uploadRawFile ritorna una Map<String, String>
+        Map<String, String> uploadResult = cloudinaryService.uploadRawFile(file);
+
+        String fileUrl = uploadResult.get("fileUrl");
+        String fileNameFromCloud = uploadResult.get("fileName"); // potrebbe essere uguale a file.getOriginalFilename()
 
         StepData stepData = new StepData();
         stepData.setProgetto(projectRepository.findById(projectId).orElseThrow());
@@ -56,7 +61,8 @@ public class StepDataService {
             stepData.setUtenteGoogle(utenteGoogle);
         }
 
-        stepData.setFileName(url);
+        stepData.setFileName(fileNameFromCloud);  // uso il nome dal risultato dell'upload
+        stepData.setFileUrl(fileUrl);
         stepData.setFileType(file.getContentType());
         stepData.setFileSize((int) file.getSize());
         stepData.setUpdatedAt(LocalDateTime.now());
@@ -103,6 +109,7 @@ public class StepDataService {
         stepData.setStep(stepRepository.findById(request.getStepId())
                 .orElseThrow(() -> new RuntimeException("Step not found")));
 
+
         if (user instanceof Utente utente) {
             stepData.setUtente(utente);
             stepData.setUtenteGoogle(null);
@@ -114,6 +121,12 @@ public class StepDataService {
         stepData.setTextareaValue(request.getTextareaValue());
         stepData.setDropdownSelected(request.getDropdownSelected());
         stepData.setCheckboxValue(request.getCheckboxValue());
+
+        stepData.setFileName(request.getFileName());
+        stepData.setFileUrl(request.getFileUrl());
+        stepData.setFileType(request.getFileType());
+        stepData.setFileSize(request.getFileSize());
+
         stepData.setUpdatedAt(LocalDateTime.now());
 
         StepData saved = stepDataRepository.save(stepData);
@@ -126,7 +139,12 @@ public class StepDataService {
     private StepDataResponse toResponse(StepData stepData) {
         StepDataResponse dto = new StepDataResponse();
         dto.setId(stepData.getId());
+        dto.setProjectId(stepData.getProgetto().getId());
+        dto.setFaseId(stepData.getFase().getId());
+        dto.setTaskId(stepData.getTask().getId());
+        dto.setStepId(stepData.getStep().getId());
         dto.setFileName(stepData.getFileName());
+        dto.setFileUrl(stepData.getFileUrl());
         dto.setFileType(stepData.getFileType());
         dto.setFileSize(stepData.getFileSize());
         dto.setTextareaValue(stepData.getTextareaValue());

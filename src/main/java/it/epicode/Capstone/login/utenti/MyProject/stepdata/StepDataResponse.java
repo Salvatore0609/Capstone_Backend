@@ -11,9 +11,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class StepDataResponse {
     private Long id;
+
+    private Long projectId;
+    private Long faseId;
+    private Long taskId;
+    private Long stepId;
     private String fileName;
     private String fileType;
     private Integer fileSize;
+    private String fileUrl;
     private String textareaValue;
     private String dropdownSelected;
     private Boolean checkboxValue;

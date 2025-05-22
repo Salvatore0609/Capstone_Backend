@@ -115,7 +115,9 @@ public class UtenteService {
 
 
     public List<Utente> getAllUtenti() {return utenteRepository.findAll();}
+
     public Utente getUtenteById(Long id) {return utenteRepository.findById(id).orElseThrow(() -> new RuntimeException("Utente non trovato"));   }
+
     public Utente updateUtente(Long id, UtenteRequest request, Utente utenteCorrente) {
         boolean isAdmin = utenteCorrente.getRoles().contains(Role.ROLE_ADMIN);
         if(utenteCorrente.getId() == id || isAdmin) {
