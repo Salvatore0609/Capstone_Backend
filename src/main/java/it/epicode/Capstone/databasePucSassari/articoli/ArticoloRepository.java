@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ArticoloRepository extends JpaRepository<Articolo, Long> {
 
@@ -13,6 +14,10 @@ public interface ArticoloRepository extends JpaRepository<Articolo, Long> {
     // Query per ottenere gli Articoli
     @Query("SELECT a FROM Articolo a")
     List<Articolo> findAllArticoli();
+
+    //Recupera un singolo Articolo con tutte le sezioni collegate
+    @Query("SELECT a FROM Articolo a LEFT JOIN FETCH a.sezioni s WHERE a.artId = :id")
+    Optional<Articolo> findByIdWithSezioni(Long id);
 
     // Query per ottenere tutte le Sezioni per ogni Articolo
     @Query("SELECT s FROM Sezione s JOIN FETCH s.articolo a WHERE a IN :articoli")
@@ -30,5 +35,8 @@ public interface ArticoloRepository extends JpaRepository<Articolo, Long> {
     // Query per ottenere tutte le Sottozone con Parametri associati
     @Query("SELECT z FROM Sottozona z LEFT JOIN FETCH z.parametri p WHERE z IN :sottozone")
     List<Sottozona> findSottozoneWithParametri(List<Sottozona> sottozone);
+
+    // Query per SALVARE un articolo e tutto il suo contenuto
+    
 
 }

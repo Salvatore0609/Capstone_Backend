@@ -1,6 +1,8 @@
 package it.epicode.Capstone.login.utenti.MyProject.stepdata;
 
 
+import it.epicode.Capstone.databasePucSassari.articoli.Articolo;
+import it.epicode.Capstone.databasePucSassari.articoli.ArticoloService;
 import it.epicode.Capstone.login.authGoogle.UtenteGoogle;
 import it.epicode.Capstone.login.utenti.Utente;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import java.util.List;
 public class StepDataController {
 
     private final StepDataService stepDataService;
+    private final ArticoloService articoloService;
 
     @PostMapping("/upload")
     public ResponseEntity<StepDataResponse> uploadFileStepData(
@@ -68,6 +71,8 @@ public class StepDataController {
         StepDataResponse saved = stepDataService.saveOrUpdateStepData(request, user);
         return ResponseEntity.ok(saved);
     }
+
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStepData(@PathVariable Long id) {

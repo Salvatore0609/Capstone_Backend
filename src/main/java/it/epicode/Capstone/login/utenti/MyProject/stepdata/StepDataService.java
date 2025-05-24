@@ -1,6 +1,9 @@
 package it.epicode.Capstone.login.utenti.MyProject.stepdata;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import it.epicode.Capstone.cloudinary.CloudinaryService;
+import it.epicode.Capstone.databasePucSassari.articoli.*;
 import it.epicode.Capstone.login.authGoogle.UtenteGoogle;
 import it.epicode.Capstone.login.authGoogle.UtenteGoogleRepository;
 import it.epicode.Capstone.login.utenti.MyProject.ProjectRepository;
@@ -29,9 +32,12 @@ public class StepDataService {
     private final FaseRepository faseRepository;
     private final TaskRepository taskRepository;
     private final StepRepository stepRepository;
+    private final ArticoloService articoloService;
 
-    /*private final UtenteRepository utenteRepository;
-    private final UtenteGoogleRepository utenteGoogleRepository;*/
+    //ObjectMapper per generare JSON leggibile (pretty‐print facoltativo)
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .enable(SerializationFeature.INDENT_OUTPUT);
+
 
     private final CloudinaryService cloudinaryService;
 
@@ -118,6 +124,32 @@ public class StepDataService {
             stepData.setUtente(null);
         }
 
+        // ——— Nuova logica per “snapshottare” l’articolo esistente ———
+        if (request.getArtId() != null) {
+            // 1) Recupero il contenuto completo dell’articolo come DTO (ArticoloResponse)
+            ArticoloResponse artResp = articoloService.findArticleById(request.getArtId())
+                    .orElseThrow(() -> new RuntimeException("Articolo non trovato con ID: " + request.getArtId()));
+
+            // 2) Serializzo quell’ArticoloResponse in JSON
+            try {
+                String jsonArticolo = objectMapper.writeValueAsString(artResp);
+                stepData.setArticoloSnapshot(jsonArticolo);
+            } catch (Exception e) {
+                throw new RuntimeException("Errore durante la serializzazione dell'articolo", e);
+            }
+
+            // devo settare anche la FK sull’entità Articolo,
+            // altrimenti il campo `stepData.getArticolo()` rimane null.
+            Articolo artEntity = articoloService.getById(request.getArtId());
+            stepData.setArticolo(artEntity);
+
+        } else {
+            // Nessun articolo selezionato: azzero snapshot e FK
+            stepData.setArticoloSnapshot(null);
+            stepData.setArticolo(null);
+        }
+        // ————————————————————————————————————————————————————————
+
         stepData.setTextareaValue(request.getTextareaValue());
         stepData.setDropdownSelected(request.getDropdownSelected());
         stepData.setCheckboxValue(request.getCheckboxValue());
@@ -143,6 +175,16 @@ public class StepDataService {
         dto.setFaseId(stepData.getFase().getId());
         dto.setTaskId(stepData.getTask().getId());
         dto.setStepId(stepData.getStep().getId());
+
+        if (stepData.getArticolo() != null) {
+            dto.setArtId(stepData.getArticolo().getArtId());
+        } else {
+            dto.setArtId(null);
+        }
+
+        //popolare anche il JSON salvato:
+        dto.setArticoloSnapshot(stepData.getArticoloSnapshot());
+
         dto.setFileName(stepData.getFileName());
         dto.setFileUrl(stepData.getFileUrl());
         dto.setFileType(stepData.getFileType());

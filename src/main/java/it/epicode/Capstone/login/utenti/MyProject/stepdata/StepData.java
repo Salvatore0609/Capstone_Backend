@@ -1,5 +1,6 @@
 package it.epicode.Capstone.login.utenti.MyProject.stepdata;
 
+import it.epicode.Capstone.databasePucSassari.articoli.Articolo;
 import it.epicode.Capstone.login.authGoogle.UtenteGoogle;
 import it.epicode.Capstone.login.utenti.MyProject.Project;
 import it.epicode.Capstone.login.utenti.MyProject.fasi.Fase;
@@ -40,6 +41,12 @@ public class StepData {
 
     @ManyToOne
     private Step step;
+
+    @ManyToOne
+    private Articolo articolo;
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String articoloSnapshot;
 
     private String fileName;
     private String fileUrl;

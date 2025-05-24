@@ -48,6 +48,7 @@ public class DataLoader implements CommandLineRunner{
                 new Step(null, "Carica una prima analisi del budget", "file", null, ".pdf", t1_1),
 
                 new Step(null, "Scegli l’area di interesse (collegamento al PRG)", "dropdown", null, null, t1_2),
+                new Step(null, "Seleziona la zona di interesse", "dropdown", null, null, t1_2),
                 new Step(null, "Verifica vincoli paesaggistici, ambientali, storici", "static", null, null, t1_2),
                 new Step(null, "Conformità alle Normative Edilizie e Antisismiche", "static", null, null, t1_2),
 

@@ -1,5 +1,6 @@
 package it.epicode.Capstone.login.utenti.MyProject.stepdata;
 
+import it.epicode.Capstone.databasePucSassari.articoli.ArticoloRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,8 @@ public class StepDataResponse {
     private Long faseId;
     private Long taskId;
     private Long stepId;
+    private Long artId;
+    private String articoloSnapshot;
     private String fileName;
     private String fileType;
     private Integer fileSize;

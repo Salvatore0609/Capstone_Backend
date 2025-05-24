@@ -23,6 +23,8 @@ public class StepDataRequest {
     @NotNull
     private Long stepId;
 
+    private Long artId;
+
     private String fileName;
     private String fileType;
     private Integer fileSize;

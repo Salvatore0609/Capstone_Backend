@@ -8,6 +8,7 @@ import it.epicode.Capstone.login.common.EmailSenderService;
 import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -64,6 +65,9 @@ public class SecurityConfig {
 
     @Autowired
     private EmailSenderService emailSenderService;
+
+    @Value("${app.redirect-url}")
+    private String redirectUrlBase;
 
 
     @Bean
@@ -142,7 +146,7 @@ public class SecurityConfig {
                             String json = mapper.writeValueAsString(payload);
                             String b64 = Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
                             String encoded = URLEncoder.encode(b64, StandardCharsets.UTF_8);
-                            String redirectUrl = "http://localhost:5173/login-google-success?data=" + encoded;
+                            String redirectUrl = redirectUrlBase + encoded;
                             response.sendRedirect(redirectUrl);
                         })
                 )
@@ -163,8 +167,10 @@ public class SecurityConfig {
                 .cors(withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/utenti/login", "/utenti/register",
-                                "/oauth2/**", "/geocode").permitAll()
+                        .requestMatchers("/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html","/utenti/login", "/utenti/register",
+                                "/oauth2/**", "/geocode", "/sottozone", "/articoli", "/articoli/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))

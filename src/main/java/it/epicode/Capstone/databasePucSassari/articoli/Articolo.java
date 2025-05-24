@@ -25,4 +25,9 @@ public class Articolo {
     @JsonManagedReference
     private List<Sezione> sezioni;
 
+    // Metodo di utilità per gestire la relazione bidirezionale
+    public void addSezione(Sezione sezione) {
+        sezioni.add(sezione);
+        sezione.setArticolo(this); // Imposta il riferimento all'articolo
+    }
 }

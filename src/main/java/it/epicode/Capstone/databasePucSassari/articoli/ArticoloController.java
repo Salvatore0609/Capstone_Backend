@@ -4,12 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -18,6 +16,7 @@ import java.util.List;
 public class ArticoloController {
 
     private final ArticoloService articoloService;
+    private final ArticoloMapper articoloMapper;
 
     // Ottieni tutti gli articoli (con tutte le loro sezioni, sottozone, parametri, etc.)
     @GetMapping
@@ -36,6 +35,32 @@ public class ArticoloController {
             // Log degli errori
             log.error("Errore nel recupero degli articoli", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // 500 Internal Server Error
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ArticoloResponse> getArticoloById(@PathVariable Long id) {
+        try {
+            Optional<ArticoloResponse> response = articoloService.findArticleById(id);
+            return response.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            log.error("Errore nel recupero articolo ID: {}", id, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    //salvare un articolo e tutto il suo contenuto
+    @PostMapping
+    public ResponseEntity<ArticoloResponse> createArticolo(@RequestBody ArticoloRequest articoloRequest) {
+        try {
+            Articolo articolo = articoloMapper.toEntity(articoloRequest);
+            Articolo savedArticolo = articoloService.saveArticoloCompleto(articolo);
+            ArticoloResponse response = articoloMapper.toResponse(savedArticolo);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            log.error("Errore nella creazione dell'articolo", e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

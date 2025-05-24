@@ -41,4 +41,8 @@ public class Sottozona {
     @JsonBackReference
     private Sezione sezione; // relazione con Sezione
 
+    public void addParametro(Parametro parametro) {
+        parametri.add(parametro);
+        parametro.setSottozona(this);
+    }
 }

@@ -54,4 +54,14 @@ public class Sezione {
     @CollectionTable(name = "section_parametri_urbanistici", joinColumns = @JoinColumn(name = "sezione_id"))
     @Column(name = "parametro")
     private List<String> parametriUrbanistici;
+
+    public void addSottozona(Sottozona sottozona) {
+        sottozone.add(sottozona);
+        sottozona.setSezione(this);
+    }
+
+    public void addUsoPermesso(UsoPermesso usoPermesso) {
+        usiPermessi.add(usoPermesso);
+        usoPermesso.setSezione(this);
+    }
 }
