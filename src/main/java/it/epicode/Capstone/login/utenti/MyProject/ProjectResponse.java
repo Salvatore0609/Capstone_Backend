@@ -19,5 +19,6 @@ public class ProjectResponse {
     private Double lat;
     private Double lng;
     private LocalDateTime createdAt;
+    private Boolean inProgress;
     private Boolean completato;
 }

@@ -40,9 +40,8 @@ public class UtenteController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/current-user")
     @Transactional
-    public Utente getCurrentUser(@AuthenticationPrincipal Utente utente) {
-        System.out.println("Utente corrente: " + utente);
-        return utente;
+    public UtenteResponse getCurrentUser(@AuthenticationPrincipal Utente utente) {
+        return utenteService.mapToResponse(utente);
     }
 
 
@@ -73,14 +72,22 @@ public class UtenteController {
     }
 
 
-
-
     @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Utente updateUtente(@PathVariable Long id, @RequestBody UtenteRequest request, @AuthenticationPrincipal Utente utente) {
-        return utenteService.updateUtente(id, request, utente);
+    public UtenteResponse updateUtente(
+            @PathVariable Long id,
+            @ModelAttribute UtenteRequest request,
+            @RequestParam(value = "avatar", required = false) MultipartFile avatarFile,
+            @AuthenticationPrincipal Utente utenteCorrente
+    ) {
+        // Se arriva un file avatar, lo aggiungo alla request
+        if (avatarFile != null && !avatarFile.isEmpty()) {
+            request.setAvatarFile(avatarFile);
+        }
+        return utenteService.updateCurrentUser(id, request, utenteCorrente);
     }
+
 
     //aggiunte
     @PreAuthorize("hasRole('ROLE_ADMIN')")

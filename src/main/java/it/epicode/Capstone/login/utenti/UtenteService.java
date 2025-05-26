@@ -77,7 +77,7 @@ public class UtenteService {
         return mapToResponse(savedUtente);
     }
     // Metodo helper per la conversione da Utente a UtenteResponse
-    private UtenteResponse mapToResponse(Utente utente) {
+    public UtenteResponse mapToResponse(Utente utente) {
         UtenteResponse response = new UtenteResponse();
         response.setId(utente.getId());
         response.setUsername(utente.getUsername());
@@ -129,6 +129,37 @@ public class UtenteService {
         }
     }
 
+    public UtenteResponse updateCurrentUser(Long id, UtenteRequest request, Utente utenteCorrente) {
+        // Verifico che l’utente corrente sia effettivamente il proprietario
+        if (!utenteCorrente.getId().equals(id)) {
+            throw new IllegalArgumentException("Non sei autorizzato a modificare questo profilo");
+        }
+
+        Utente utente = utenteRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Utente non trovato"));
+
+        // Copio tutti i campi consentiti (escluse password e ruoli)
+        utente.setUsername(request.getUsername());
+        utente.setEmail(request.getEmail());
+        utente.setNome(request.getNome());
+        utente.setCognome(request.getCognome());
+        utente.setDataNascita(request.getDataNascita());
+        utente.setLuogoNascita(request.getLuogoNascita());
+        utente.setResidenza(request.getResidenza());
+        utente.setNomeCompagnia(request.getNomeCompagnia());
+        utente.setLingua(request.getLingua());
+
+        // Se è arrivato un file avatar, lo carico su Cloudinary e imposto l’URL
+        MultipartFile avatarFile = request.getAvatarFile();
+        if (avatarFile != null && !avatarFile.isEmpty()) {
+            String avatarUrl = cloudinaryService.uploadImage(avatarFile);
+            utente.setAvatar(avatarUrl);
+        }
+
+        Utente saved = utenteRepository.save(utente);
+        return mapToResponse(saved);
+    }
+
     public void deleteUtente(Long id) {
         if (!utenteRepository.existsById(id)) {
             throw new NotFoundException("Utente non trovato");
@@ -157,7 +188,6 @@ public class UtenteService {
         // Restituisci l'URL dell'avatar caricato
         return avatarUrl;
     }
-
 
 
 }

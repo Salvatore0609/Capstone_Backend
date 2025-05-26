@@ -43,6 +43,10 @@ public class Project {
     @Column
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @Column(name = "in_progress")
+    private Boolean inProgress = false;
+
     @Column
     private Boolean completato = false;
 

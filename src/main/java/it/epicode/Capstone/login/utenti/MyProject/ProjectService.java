@@ -121,6 +121,10 @@ public class ProjectService {
         project.setImpresaCostruttrice(req.getImpresaCostruttrice());
         project.setIndirizzo(req.getIndirizzo());
 
+        if (req.getInProgress() != null) {
+            project.setInProgress(req.getInProgress());
+        }
+
         if (req.getCompletato() != null) {
             project.setCompletato(req.getCompletato());
         }
@@ -173,6 +177,7 @@ public class ProjectService {
                 p.getLat(),
                 p.getLng(),
                 p.getCreatedAt(),
+                p.getInProgress(),
                 p.getCompletato()
         );
     }

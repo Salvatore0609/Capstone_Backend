@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
@@ -23,6 +24,7 @@ public class UtenteRequest {
     @NotBlank (message = "L'username non può essere vuoto")
     @Column(unique = true)
     private String username;
+
     @NotNull(message = "Il tuo annodi nascita non può essere vuoto")
     private LocalDate dataNascita;
     @NotBlank (message = "Il tuo luogo di nascita non può essere vuoto")
@@ -31,5 +33,7 @@ public class UtenteRequest {
     private String residenza;
     private String nomeCompagnia;
     private String lingua;
+
+    private MultipartFile avatarFile;
 
 }
