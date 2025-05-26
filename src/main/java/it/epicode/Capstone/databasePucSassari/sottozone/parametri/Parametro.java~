@@ -1,0 +1,36 @@
+package it.epicode.Capstone.databasePucSassari.sottozone.parametri;
+
+import it.epicode.backend.databasePucSassari.sottozone.Sottozona;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Embeddable
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Parametro {
+
+    private String indiceFondiario;
+    private String altezzaMassima;
+    private String rapportoCopertura;
+    private String intensitaTerritorialeMassima;
+    private String lottoMinimo;
+    private String volumeMassimo;
+    private String indiceTerritoriale;
+    private List<String> volumetria;
+    private String incremento;
+    private String deroga;
+    private String tipo;
+    private String indice;
+    private String note;
+
+    @ManyToOne
+    @JoinColumn(name = "sottoz_id", nullable = true)
+    private Sottozona sottozona;
+}

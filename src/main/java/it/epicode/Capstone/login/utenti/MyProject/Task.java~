@@ -1,0 +1,26 @@
+package it.epicode.Capstone.login.utenti.MyProject;
+
+import jakarta.persistence.*;
+import jakarta.persistence.GenerationType;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "tasks")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Task {
+    @Id
+    @GeneratedValue
+    private Long id;
+    private String titolo;
+    private String descrizione;
+
+    @ManyToOne
+    private Fase fase;
+
+    @OneToMany(mappedBy = "task")
+    private List<Step> steps;
+}

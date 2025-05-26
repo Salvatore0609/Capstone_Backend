@@ -1,0 +1,22 @@
+package it.epicode.Capstone.login.utenti.MyProject;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+
+
+import java.util.List;
+
+@Entity
+
+public class Fase {
+    @Id
+    @GeneratedValue
+    private Long id;
+    private String titolo;
+    private int numero;
+
+    @OneToMany(mappedBy = "fase")
+    private List<Task> tasks;
+}

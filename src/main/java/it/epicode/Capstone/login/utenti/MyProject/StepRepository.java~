@@ -1,0 +1,6 @@
+package it.epicode.Capstone.login.utenti.MyProject;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public class StepRepository extends JpaRepository<Step, Long> {
+}

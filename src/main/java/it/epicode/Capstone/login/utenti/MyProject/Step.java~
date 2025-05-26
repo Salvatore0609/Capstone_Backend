@@ -1,0 +1,14 @@
+package it.epicode.Capstone.login.utenti.MyProject;
+
+@Entity
+public class Step {
+    @Id @GeneratedValue
+    private Long id;
+    private String label;
+    private String type; // es. file, text, select
+    private String placeholder;
+    private String accept;
+
+    @ManyToOne
+    private Task task;
+}

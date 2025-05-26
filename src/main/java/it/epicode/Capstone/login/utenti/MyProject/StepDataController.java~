@@ -1,0 +1,81 @@
+package it.epicode.Capstone.login.utenti.MyProject;
+
+import it.epicode.Capstone.cloudinary.CloudinaryService;
+import it.epicode.Capstone.login.authGoogle.UtenteGoogleRepository;
+import it.epicode.Capstone.login.utenti.UtenteController;
+import it.epicode.Capstone.login.utenti.UtenteRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@RestController
+@RequestMapping("/project/step-data")
+@RequiredArgsConstructor
+public class StepDataController {
+
+    private final StepDataRepository stepDataRepository;
+    private final ProjectRepository projectRepository;
+    private final FaseRepository faseRepository;
+    private final TaskRepository taskRepository;
+    private final StepRepository stepRepository;
+    private final UtenteRepository utenteRepository;
+    private final UtenteGoogleRepository utenteGoogleRepository;
+    private final CloudinaryService cloudinaryService;
+
+    @PostMapping("/upload")
+    public ResponseEntity<StepData> uploadFileStepData(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("projectId") Long projectId,
+            @RequestParam("faseId") Long faseId,
+            @RequestParam("taskId") Long taskId,
+            @RequestParam("stepId") Long stepId,
+            @RequestParam("utenteId") Long utenteId
+    ) {
+        String url = cloudinaryService.uploadImage(file);
+
+        StepData stepData = new StepData();
+        stepData.setProgetto(projectRepository.findById(projectId).orElseThrow());
+        stepData.setFase(faseRepository.findById(faseId).orElseThrow());
+        stepData.setTask(taskRepository.findById(taskId).orElseThrow());
+        stepData.setStep(stepRepository.findById(stepId).orElseThrow());
+        if (utenteId != null) {
+            stepData.setUtente(utenteRepository.findById(utenteId).orElseThrow());
+        } else {
+            stepData.set(utenteGoogleRepository.findById(utenteId).orElseThrow());
+        }
+
+
+        stepData.setFileName(url);
+        stepData.setFileType(file.getContentType());
+        stepData.setFileSize((int) file.getSize());
+        stepData.setUpdatedAt(LocalDateTime.now());
+
+        return ResponseEntity.ok(stepDataRepository.save(stepData));
+    }
+
+    // GET dati già inseriti per un progetto, fase, task, step
+    @GetMapping
+    public ResponseEntity<List<StepData>> getStepDataForProject(@RequestParam Long projectId) {
+        List<StepData> data = stepDataRepository.findByProgettoId(projectId);
+        return ResponseEntity.ok(data);
+    }
+
+    // POST/PUT salva o aggiorna step data
+    @PostMapping
+    public ResponseEntity<StepData> saveStepData(@RequestBody StepData data) {
+        data.setUpdatedAt(LocalDateTime.now());
+        StepData saved = stepDataRepository.save(data);
+        return ResponseEntity.ok(saved);
+    }
+
+    // DELETE uno stepData
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStepData(@PathVariable Long id) {
+        stepDataRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+}
