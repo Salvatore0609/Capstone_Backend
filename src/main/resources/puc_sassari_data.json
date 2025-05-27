@@ -482,7 +482,7 @@
                 "rapportoCopertura": "50",
                 "intensitàTerritorialeMassima": ""
 ,
-                "lotto_inimo": ""
+                "lottoMinimo": ""
 ,
                 "volumeMassimo": ""
 ,
@@ -845,84 +845,84 @@
           "In_assenza_di_PUA. I4 INTERVENTI DI RISTRUTTURAZIONE EDILIZIA (SENZA INCREMENTO DI VOLUMETRIA)",
           "In_presenza_di_PUA. SONO CONSENTITI TUTTI GLI INTERVENTI PREVISTI NELLO STESSO PIANO ATTUATIVO"
         ]
+      },
+      {
+        "sezId": 4,
+        "titolo": "4. DESTINAZIONI D'USO AMMESSE",
+        "usiPermessi": [
+          {
+            "macrocategorie": "RESIDENZIALE E SERVIZI STRETTAMENTE CONNESSI CON LA RESIDENZA",
+            "usi": [
+              "RES01 - Residenziale abitativa",
+              "RES02 - Strutture ricettive extralberghiere",
+              "RES02.a - Bed & Breakfast",
+              "RES02.b - Residence",
+              "RES02.c - Boat & Breakfast",
+              "RES02.d - Domos",
+              "RES02.e - Case e appartamenti per vacanze (CAV)",
+              "RES03 - Servizi strettamente connessi con la residenza",
+              "RES03.a - Studi professionali",
+              "RES03.b - Attività commerciali",
+              "RES03.c - Attività artigianali",
+              "RES03.d - Attività di ristorazione",
+              "RES03.e - Attività turistico-ricettiva"
+            ]
+          },
+          {
+            "macrocategorie": "TURISTICO-RICETTIVA",
+            "usi": [
+              "TR01 - Strutture ricettive alberghiere",
+              "TR01.a - Alberghi",
+              "TR01.b - Alberghi residenziali",
+              "TR01.c - Villaggi albergo",
+              "TR01.d - Alberghi diffusi",
+              "TR02 - Strutture ricettive extralberghiere",
+              "TR02.a - Case per ferie",
+              "TR02.b - Ostelli per la gioventù"
+            ]
+          },
+          {
+            "macrocategorie": "ARTIGIANALE E INDUSTRIALE",
+            "usi": [
+              "AI01 - Attività produttive di beni",
+              "AI01.a - Attività produttive di beni compatibili con la residenza",
+              "AI03 - Depositi e magazzini"
+            ]
+          },
+          {
+            "macrocategorie": "DIREZIONALE, COMMERCIALE E SOCIO-SANITARIA",
+            "usi": [
+              "DIR01 - Uffici in genere pubblici o privati",
+              "DIR02 - Attività produttive di servizi",
+              "DIR03 - Strutture per istruzione primaria, secondaria e università",
+              "DIR05a - Strutture di culto",
+              "DIR06a - Attrezzature e strutture per la cultura",
+              "DIR06b - Attrezzature e strutture congressuali",
+              "DIR07 - Attrezzature e strutture per il tempo libero",
+              "DIR08 - Attrezzature e strutture per lo sport",
+              "DIR09 - Attrezzature e strutture per la mobilità",
+              "COMM01a - Esercizi di vicinato",
+              "COMM01b - Medie Strutture di Vendita",
+              "COMM04 - Parcheggi/Autorimesse a fini di lucro",
+              "COMM05 - Commercio all'ingrosso",
+              "COMM06 - Pubblici esercizi per la somministrazione di alimenti e bevande",
+              "SS.a - Attrezzature socio-sanitarie",
+              "SS.b - Ambulatori e poliambulatori",
+              "SS.c - Centri per il recupero terapeutico",
+              "SS.d - Attrezzature socio assistenziali"
+            ]
+          }
+        ]
+      },
+      {
+        "sezId": 5,
+        "titolo": "5. PRESCRIZIONI PARTICOLARI",
+        "contenuto": [
+          "Gli interventi di ristrutturazione urbanistica I10, nuova edificazione I8, e di ristrutturazione edilizia I4 comportanti demolizione e ricostruzione, dovranno essere realizzati rispettando l'arretramento dalla strada secondo le caratteristiche dell'edificato al contorno.",
+          "Dove l'edificazione è caratterizzata dall'attestazione del fabbricato sul filo interno del marciapiedi, ci si dovrà attenere a tale caratteristica, evitando, quando è possibile, la realizzazione di balconi e/o ballatoi a sbalzo sul suolo pubblico, privilegiando invece le logge incassate.",
+          "Laddove non sia presente tale tipologia di edificazione, si dovrà osservare un arretramento minimo di 2 metri dal filo interno del marciapiedi, o di 4 metri in sua assenza."
+        ]
       }
-    ]
-  },
-  {
-    "sezId": 4,
-    "titolo": "4. DESTINAZIONI D'USO AMMESSE",
-    "usiPermessi": [
-      {
-        "macrocategorie": "RESIDENZIALE E SERVIZI STRETTAMENTE CONNESSI CON LA RESIDENZA",
-        "usi": [
-          "RES01 - Residenziale abitativa",
-          "RES02 - Strutture ricettive extralberghiere",
-          "RES02.a - Bed & Breakfast",
-          "RES02.b - Residence",
-          "RES02.c - Boat & Breakfast",
-          "RES02.d - Domos",
-          "RES02.e - Case e appartamenti per vacanze (CAV)",
-          "RES03 - Servizi strettamente connessi con la residenza",
-          "RES03.a - Studi professionali",
-          "RES03.b - Attività commerciali",
-          "RES03.c - Attività artigianali",
-          "RES03.d - Attività di ristorazione",
-          "RES03.e - Attività turistico-ricettiva"
-        ]
-      },
-      {
-        "macrocategorie": "TURISTICO-RICETTIVA",
-        "usi": [
-          "TR01 - Strutture ricettive alberghiere",
-          "TR01.a - Alberghi",
-          "TR01.b - Alberghi residenziali",
-          "TR01.c - Villaggi albergo",
-          "TR01.d - Alberghi diffusi",
-          "TR02 - Strutture ricettive extralberghiere",
-          "TR02.a - Case per ferie",
-          "TR02.b - Ostelli per la gioventù"
-        ]
-      },
-      {
-        "macrocategorie": "ARTIGIANALE E INDUSTRIALE",
-        "usi": [
-          "AI01 - Attività produttive di beni",
-          "AI01.a - Attività produttive di beni compatibili con la residenza",
-          "AI03 - Depositi e magazzini"
-        ]
-      },
-      {
-        "macrocategorie": "DIREZIONALE, COMMERCIALE E SOCIO-SANITARIA",
-        "usi": [
-          "DIR01 - Uffici in genere pubblici o privati",
-          "DIR02 - Attività produttive di servizi",
-          "DIR03 - Strutture per istruzione primaria, secondaria e università",
-          "DIR05a - Strutture di culto",
-          "DIR06a - Attrezzature e strutture per la cultura",
-          "DIR06b - Attrezzature e strutture congressuali",
-          "DIR07 - Attrezzature e strutture per il tempo libero",
-          "DIR08 - Attrezzature e strutture per lo sport",
-          "DIR09 - Attrezzature e strutture per la mobilità",
-          "COMM01a - Esercizi di vicinato",
-          "COMM01b - Medie Strutture di Vendita",
-          "COMM04 - Parcheggi/Autorimesse a fini di lucro",
-          "COMM05 - Commercio all'ingrosso",
-          "COMM06 - Pubblici esercizi per la somministrazione di alimenti e bevande",
-          "SS.a - Attrezzature socio-sanitarie",
-          "SS.b - Ambulatori e poliambulatori",
-          "SS.c - Centri per il recupero terapeutico",
-          "SS.d - Attrezzature socio assistenziali"
-        ]
-      }
-    ]
-  },
-  {
-    "sezId": 5,
-    "titolo": "5. PRESCRIZIONI PARTICOLARI",
-    "contenuto": [
-      "Gli interventi di ristrutturazione urbanistica I10, nuova edificazione I8, e di ristrutturazione edilizia I4 comportanti demolizione e ricostruzione, dovranno essere realizzati rispettando l'arretramento dalla strada secondo le caratteristiche dell'edificato al contorno.",
-      "Dove l'edificazione è caratterizzata dall'attestazione del fabbricato sul filo interno del marciapiedi, ci si dovrà attenere a tale caratteristica, evitando, quando è possibile, la realizzazione di balconi e/o ballatoi a sbalzo sul suolo pubblico, privilegiando invece le logge incassate.",
-      "Laddove non sia presente tale tipologia di edificazione, si dovrà osservare un arretramento minimo di 2 metri dal filo interno del marciapiedi, o di 4 metri in sua assenza."
     ]
   },
   {
