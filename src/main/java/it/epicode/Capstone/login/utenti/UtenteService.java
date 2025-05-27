@@ -1,12 +1,10 @@
 package it.epicode.Capstone.login.utenti;
 
 import it.epicode.Capstone.cloudinary.CloudinaryService;
-import it.epicode.Capstone.login.auth.JwtTokenUtil;
-import it.epicode.Capstone.login.auth.Role;
-import it.epicode.Capstone.login.common.CommonResponse;
-import it.epicode.Capstone.login.common.EmailSenderService;
+import it.epicode.Capstone.auth.JwtTokenUtil;
+import it.epicode.Capstone.auth.Role;
+import it.epicode.Capstone.common.EmailSenderService;
 import it.epicode.Capstone.login.exceptions.NotFoundException;
-import it.epicode.Capstone.login.exceptions.UsernameException;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityExistsException;
 import org.springframework.beans.BeanUtils;
@@ -23,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;

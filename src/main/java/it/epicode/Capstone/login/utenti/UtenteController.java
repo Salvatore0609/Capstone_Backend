@@ -2,9 +2,8 @@ package it.epicode.Capstone.login.utenti;
 
 /*import com.google.api.client.json.gson.GsonFactory;*/
 
-import it.epicode.Capstone.login.auth.AuthResponse;
-import it.epicode.Capstone.login.auth.LoginRequest;
-import it.epicode.Capstone.login.common.CommonResponse;
+import it.epicode.Capstone.auth.AuthResponse;
+import it.epicode.Capstone.auth.LoginRequest;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;

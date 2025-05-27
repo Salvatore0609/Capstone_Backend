@@ -1,8 +1,7 @@
 package it.epicode.Capstone.login.utenti;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.epicode.Capstone.login.auth.Role;
-import it.epicode.Capstone.login.utenti.MyProject.Project;
+import it.epicode.Capstone.auth.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,9 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 @Entity

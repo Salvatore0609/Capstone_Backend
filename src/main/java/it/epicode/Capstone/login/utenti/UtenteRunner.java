@@ -1,7 +1,7 @@
 package it.epicode.Capstone.login.utenti;
 
-import it.epicode.Capstone.login.auth.JwtTokenUtil;
-import it.epicode.Capstone.login.auth.Role;
+import it.epicode.Capstone.auth.JwtTokenUtil;
+import it.epicode.Capstone.auth.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
