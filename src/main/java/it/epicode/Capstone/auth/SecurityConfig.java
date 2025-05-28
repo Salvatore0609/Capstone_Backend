@@ -8,12 +8,15 @@ import it.epicode.Capstone.common.EmailSenderService;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -39,6 +42,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -62,10 +66,8 @@ public class SecurityConfig {
     @Autowired
     private CustomOAuth2UserService customOAuth2UserService;
 
-    /* iniettiamo il service per recuperare accessToken/refreshToken */
     @Autowired
     private OAuth2AuthorizedClientService authorizedClientService;
-    /* ---------------------------------------------------------------- */
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
@@ -79,24 +81,20 @@ public class SecurityConfig {
     @Value("${app.redirect-url}")
     private String redirectUrlBase;
 
-
     @Bean
     @Order(1)
     public SecurityFilterChain oauth2SecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Questo chain gira solo per le URL di OAuth2/login
                 .securityMatcher("/oauth2/**", "/login/oauth2/**")
                 .cors(withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
                 .oauth2Login(oauth2 -> oauth2
-                                .loginPage("/oauth2/authorization/google")
-                                .authorizationEndpoint(authz -> authz.baseUri("/oauth2/authorization"))
-                                .redirectionEndpoint(redir -> redir.baseUri("/login/oauth2/code/*"))
-                                .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                                /* REPLACED: inline successHandler con metodo dedicato */
-                                .successHandler(this::oauth2LoginSuccessHandler)
-                        /* ---------------------------------------------------------------- */
+                        .loginPage("/oauth2/authorization/google")
+                        .authorizationEndpoint(authz -> authz.baseUri("/oauth2/authorization"))
+                        .redirectionEndpoint(redir -> redir.baseUri("/login/oauth2/code/*"))
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .successHandler(this::oauth2LoginSuccessHandler)
                 )
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll()
@@ -109,7 +107,6 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain jwtSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Questo chain gira su tutte le altre richieste
                 .securityMatcher(request -> true)
                 .cors(withDefaults())
                 .csrf(csrf -> csrf.disable())
@@ -147,7 +144,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // solo per autenticazione “normale” (username/password)
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider auth = new DaoAuthenticationProvider();
@@ -156,26 +152,21 @@ public class SecurityConfig {
         return auth;
     }
 
-
-    /* NEW: metodo dedicato per il success handler OAuth2 */
     private void oauth2LoginSuccessHandler(
             HttpServletRequest request,
             HttpServletResponse response,
             org.springframework.security.core.Authentication authentication
     ) throws IOException {
-        // 1) Ottengo il token di autenticazione OAuth2
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
-        String registrationId = oauthToken.getAuthorizedClientRegistrationId(); // "google"
-        String principalName = oauthToken.getName();  // di solito l'email
+        String registrationId = oauthToken.getAuthorizedClientRegistrationId();
+        String principalName = oauthToken.getName();
 
-        // 2) Recupero l'OAuth2AuthorizedClient per avere accessToken e refreshToken
         OAuth2AuthorizedClient authorizedClient = authorizedClientService
                 .loadAuthorizedClient(registrationId, principalName);
         if (authorizedClient == null) {
             throw new IllegalStateException("AuthorizedClient non trovato per utente: " + principalName);
         }
 
-        // 3) Estrazione dei token
         OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
         OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
 
@@ -183,53 +174,106 @@ public class SecurityConfig {
         Instant expiresAt = accessToken.getExpiresAt();
         String refreshTokenValue = (refreshToken != null) ? refreshToken.getTokenValue() : null;
 
-        // 4) Recupero o creo UtenteGoogle in DB
-        UtenteGoogle utenteGoogle = utenteGoogleRepository.findByEmail(principalName)
-                .orElseGet(() -> {
-                    // Se non esiste, creo un nuovo UtenteGoogle
+        // Gestione transazionale robusta
+        UtenteGoogle utenteGoogle = handleUserCreation(oauthToken, principalName);
+
+        // Aggiornamento token
+        updateUserTokens(utenteGoogle, accessTokenValue, refreshTokenValue, expiresAt);
+
+        // Generazione JWT e redirect
+        generateJwtAndRedirect(response, utenteGoogle);
+    }
+
+    @Transactional
+    protected UtenteGoogle handleUserCreation(OAuth2AuthenticationToken oauthToken, String email) {
+        int maxRetries = 3;
+        int attempt = 0;
+
+        while (attempt < maxRetries) {
+            try {
+                Optional<UtenteGoogle> existingUser = utenteGoogleRepository.findByEmail(oauthToken.getPrincipal().getAttribute("email"));
+
+                if (existingUser.isPresent()) {
+                    log.info("Utente Google esistente: {}", email);
+                    return existingUser.get();
+                } else {
                     OAuth2User oauth2User = oauthToken.getPrincipal();
                     UtenteGoogle newUser = new UtenteGoogle();
                     newUser.setEmail(oauth2User.getAttribute("email"));
                     newUser.setNome(oauth2User.getAttribute("name"));
                     newUser.setAvatar(oauth2User.getAttribute("picture"));
                     newUser.setRoles(Set.of(Role.ROLE_USER));
-                    log.info("Nuovo utente Google creato: {}", newUser);
-                    try {
-                        emailSenderService.sendEmail(
-                                newUser.getEmail(),
-                                "Benvenuto",
-                                "Ciao " + newUser.getNome() + " Benvenuto in Archiplanner!"
-                        );
-                    } catch (MessagingException e) {
-                        throw new RuntimeException(e);
-                    }
-                    return utenteGoogleRepository.save(newUser);
-                });
 
-        // 5) Salvo accessToken, refreshToken e scadenza in UtenteGoogle
-        utenteGoogle.setAccessToken(accessTokenValue);
-        utenteGoogle.setRefreshToken(refreshTokenValue);
-        utenteGoogle.setTokenExpiry(expiresAt);
-        utenteGoogleRepository.save(utenteGoogle);
+                    UtenteGoogle savedUser = utenteGoogleRepository.save(newUser);
+                    log.info("Nuovo utente Google creato: {}", savedUser);
 
-        // 6) Genero JWT interno e redirect al frontend
+                    // Invio email asincrono per non bloccare il flusso
+                    new Thread(() -> sendWelcomeEmail(savedUser)).start();
+
+                    return savedUser;
+                }
+            } catch (DataIntegrityViolationException | ObjectOptimisticLockingFailureException ex) {
+                attempt++;
+                log.warn("Conflitto di concorrenza (tentativo {} di {}): {}", attempt, maxRetries, ex.getMessage());
+
+                if (attempt >= maxRetries) {
+                    log.error("Fallito dopo {} tentativi. Recupero forzato utente.", maxRetries);
+                    return utenteGoogleRepository.findByEmail(email)
+                            .orElseThrow(() -> new RuntimeException("Utente non trovato dopo conflitto: " + email));
+                }
+
+                // Pausa prima di riprovare
+                try {
+                    Thread.sleep(100 * attempt);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+        throw new IllegalStateException("Flusso di creazione utente non completato");
+    }
+
+    private void sendWelcomeEmail(UtenteGoogle user) {
+        try {
+            emailSenderService.sendEmail(
+                    user.getEmail(),
+                    "Benvenuto",
+                    "Ciao " + user.getNome() + ", benvenuto in Archiplanner!"
+            );
+            log.info("Email di benvenuto inviata a: {}", user.getEmail());
+        } catch (MessagingException e) {
+            log.error("Invio email fallito: {}", e.getMessage());
+        }
+    }
+
+    private void updateUserTokens(UtenteGoogle user, String accessToken, String refreshToken, Instant expiry) {
+        user.setAccessToken(accessToken);
+        user.setRefreshToken(refreshToken);
+        user.setTokenExpiry(expiry);
+        utenteGoogleRepository.save(user);
+        log.debug("Token aggiornati per utente: {}", user.getEmail());
+    }
+
+    private void generateJwtAndRedirect(HttpServletResponse response, UtenteGoogle user) throws IOException {
         UserDetails userDetails = new org.springframework.security.core.userdetails.User(
-                utenteGoogle.getEmail(),
+                user.getEmail(),
                 "",
-                utenteGoogle.getRoles().stream()
+                user.getRoles().stream()
                         .map(role -> new SimpleGrantedAuthority(role.name()))
                         .collect(Collectors.toList())
         );
+
         String jwt = jwtTokenUtil.generateToken(userDetails);
 
         Map<String, String> payload = Map.of(
                 "token", jwt,
-                "id", utenteGoogle.getId().toString(),
-                "username", utenteGoogle.getEmail(),
-                "email", utenteGoogle.getEmail(),
-                "nome", utenteGoogle.getNome(),
-                "avatar", utenteGoogle.getAvatar()
+                "id", user.getId().toString(),
+                "username", user.getEmail(),
+                "email", user.getEmail(),
+                "nome", user.getNome(),
+                "avatar", user.getAvatar()
         );
+
         String json = new ObjectMapper().writeValueAsString(payload);
         String b64 = Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
         String encoded = URLEncoder.encode(b64, StandardCharsets.UTF_8);
@@ -237,5 +281,4 @@ public class SecurityConfig {
 
         response.sendRedirect(redirectUrl);
     }
-    /* ---------------------------------------------------------------- */
 }
