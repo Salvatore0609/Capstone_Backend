@@ -5,7 +5,7 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
-import com.google.api.services.calendar.model.Event;            // <<< Import corretto per gli eventi Google
+import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
 
@@ -13,7 +13,7 @@ import it.epicode.Capstone.login.utentigoogle.UtenteGoogle;
 import it.epicode.Capstone.login.utentigoogle.UtenteGoogleRepository;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;     // <<< Import corretto di @Value
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,19 +36,22 @@ public class GoogleCalendarService {
     @Value("${spring.security.oauth2.client.registration.google.client-secret}")
     private String clientSecret;
 
-    /**
-     * Costruisce un client Calendar pronto all'uso per l'utente con email specificata.
-     * Se l'accessToken è scaduto o sta per scadere, lo rinnova usando il refreshToken.
-     */
+    // Cerca di costruire un client Calendar per l'utente con email specificata.
+    // Se l'utente non è presente in UtenteGoogleRepository, restituisce null.
+    // Se il token di accesso è scaduto o sta per scadere, lo rinnova.
     private Calendar getCalendarClient(String email) throws IOException, GeneralSecurityException {
-        // 1) Recupera l'UtenteGoogle dal DB (così abbiamo accessToken/refreshToken)
-        UtenteGoogle ug = utenteGoogleRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("UtenteGoogle non trovato: " + email));
+        // Recupera l'UtenteGoogle dal database
+        Optional<UtenteGoogle> optionalUg = utenteGoogleRepository.findByEmail(email);
+        if (optionalUg.isEmpty()) {
+            // Utente non autenticato con Google: ritorna null
+            return null;
+        }
+        UtenteGoogle ug = optionalUg.get();
 
-        // 2) Controllo se l'accessToken è in scadenza (entro 60 secondi)
+        // Verifica se l'access token è scaduto o manca
         Instant now = Instant.now();
         if (ug.getTokenExpiry() == null || ug.getTokenExpiry().isBefore(now.plusSeconds(60))) {
-            // 2.1) Rinnovo l'accessToken tramite GoogleCredential
+            // Rinnova il token usando GoogleCredential
             GoogleCredential credential = new GoogleCredential.Builder()
                     .setClientSecrets(clientId, clientSecret)
                     .setJsonFactory(JacksonFactory.getDefaultInstance())
@@ -59,16 +63,16 @@ public class GoogleCalendarService {
             String newAccessToken = credential.getAccessToken();
             Instant newExpiry = Instant.now().plusSeconds(credential.getExpiresInSeconds());
 
-            // 2.2) Salvo i nuovi token su DB
+            // Salva i nuovi token nel database
             ug.setAccessToken(newAccessToken);
             ug.setTokenExpiry(newExpiry);
             utenteGoogleRepository.save(ug);
         }
 
-        // 3) Creo un GoogleCredential solo con accessToken valido (per l'HTTP initializer)
+        // Crea un GoogleCredential valido con l'access token aggiornato
         GoogleCredential validCredential = new GoogleCredential().setAccessToken(ug.getAccessToken());
 
-        // 4) Costruisco e restituisco il client Calendar
+        // Costruisce e restituisce il client Calendar
         return new Calendar.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 JacksonFactory.getDefaultInstance(),
@@ -78,16 +82,16 @@ public class GoogleCalendarService {
                 .build();
     }
 
-    /**
-     * Ottiene gli eventi da Google Calendar (calendarId = "primary") tra timeMin e timeMax.
-     * @param email       email dell'UtenteGoogle
-     * @param timeMin     data/ora di inizio (LocalDateTime)
-     * @param timeMax     data/ora di fine (LocalDateTime)
-     * @return            lista di Event (Google)
-     */
+    // Ottiene gli eventi da Google Calendar (calendarId = "primary") tra timeMin e timeMax.
+    // Se l'utente non è un UtenteGoogle, restituisce null.
     public List<Event> getGoogleEvents(String email, LocalDateTime timeMin, LocalDateTime timeMax)
             throws IOException, GeneralSecurityException {
+
         Calendar client = getCalendarClient(email);
+        if (client == null) {
+            // Utente non autenticato con Google
+            return null;
+        }
 
         DateTime min = new DateTime(timeMin.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
         DateTime max = new DateTime(timeMax.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
@@ -103,17 +107,18 @@ public class GoogleCalendarService {
         return events.getItems();
     }
 
-    /**
-     * Crea un nuovo evento su Google Calendar.
-     * @param email       email dell'UtenteGoogle
-     * @param dto         oggetto CalendarEventRequest con title, description, startTime, endTime
-     * @return            l'Evento creato (Google)
-     */
+    // Crea un nuovo evento su Google Calendar.
+    // Se l'utente non è un UtenteGoogle, restituisce null.
     public Event createGoogleEvent(String email, CalendarEventRequest dto)
             throws IOException, GeneralSecurityException {
-        Calendar client = getCalendarClient(email);
 
-        Event event = new Event();  // <<< Uso dell'Event corretto da Google API
+        Calendar client = getCalendarClient(email);
+        if (client == null) {
+            // Utente non autenticato con Google
+            return null;
+        }
+
+        Event event = new Event();
         event.setSummary(dto.getTitle());
         event.setDescription(dto.getDescription());
 
@@ -130,18 +135,18 @@ public class GoogleCalendarService {
         return client.events().insert("primary", event).execute();
     }
 
-    /**
-     * Aggiorna un evento esistente su Google Calendar.
-     * @param email          email dell'UtenteGoogle
-     * @param googleEventId  l'ID dell'evento su Google Calendar
-     * @param dto            oggetto CalendarEventRequest con dati aggiornati
-     * @return               l'Evento aggiornato (Google)
-     */
+    // Aggiorna un evento esistente su Google Calendar.
+    // Se l'utente non è un UtenteGoogle, restituisce null.
     public Event updateGoogleEvent(String email, String googleEventId, CalendarEventRequest dto)
             throws IOException, GeneralSecurityException {
-        Calendar client = getCalendarClient(email);
 
-        Event event = client.events().get("primary", googleEventId).execute();  // <<< Event di Google
+        Calendar client = getCalendarClient(email);
+        if (client == null) {
+            // Utente non autenticato con Google
+            return null;
+        }
+
+        Event event = client.events().get("primary", googleEventId).execute();
         event.setSummary(dto.getTitle());
         event.setDescription(dto.getDescription());
         event.setStart(new EventDateTime()
@@ -154,14 +159,17 @@ public class GoogleCalendarService {
         return client.events().update("primary", googleEventId, event).execute();
     }
 
-    /**
-     * Elimina un evento da Google Calendar.
-     * @param email          email dell'UtenteGoogle
-     * @param googleEventId  l'ID dell'evento su Google Calendar
-     */
+    // Elimina un evento da Google Calendar.
+    // Se l'utente non è un UtenteGoogle, non fa nulla.
     public void deleteGoogleEvent(String email, String googleEventId)
             throws IOException, GeneralSecurityException {
+
         Calendar client = getCalendarClient(email);
+        if (client == null) {
+            // Utente non autenticato con Google
+            return;
+        }
+
         client.events().delete("primary", googleEventId).execute();
     }
 }
