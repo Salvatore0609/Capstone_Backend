@@ -26,8 +26,8 @@ public class GeocodingController {
             @RequestParam @NotBlank @Size(min = 20) String address // Validazione lunghezza
     ) {
         try {
-            if (address.length() < 20) {
-                throw new IllegalArgumentException("Inserire almeno 5 caratteri");
+            if (address.length() < 15) {
+                throw new IllegalArgumentException("Inserire almeno 15 caratteri");
             }
 
             GeocodingService.Coordinates coordinates = geocodingService.geocodeAddress(address);
