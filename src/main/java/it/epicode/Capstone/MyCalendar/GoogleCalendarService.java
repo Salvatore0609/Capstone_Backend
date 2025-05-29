@@ -122,12 +122,19 @@ public class GoogleCalendarService {
         event.setSummary(dto.getTitle());
         event.setDescription(dto.getDescription());
 
+        LocalDateTime startLocal = LocalDateTime.parse(dto.getStartTime());
+        Instant startInstant = startLocal.atZone(ZoneId.of("Europe/Rome")).toInstant();
+        DateTime startDateTime = new DateTime(startInstant.toEpochMilli());
         EventDateTime start = new EventDateTime()
-                .setDateTime(new DateTime(dto.getStartTime()))
-                .setTimeZone(ZoneId.of("Europe/Rome").toString());
+                .setDateTime(startDateTime)
+                .setTimeZone("Europe/Rome");
+
+        LocalDateTime endLocal = LocalDateTime.parse(dto.getEndTime());
+        Instant endInstant = endLocal.atZone(ZoneId.of("Europe/Rome")).toInstant();
+        DateTime endDateTime = new DateTime(endInstant.toEpochMilli());
         EventDateTime end = new EventDateTime()
-                .setDateTime(new DateTime(dto.getEndTime()))
-                .setTimeZone(ZoneId.of("Europe/Rome").toString());
+                .setDateTime(endDateTime)
+                .setTimeZone("Europe/Rome");
 
         event.setStart(start);
         event.setEnd(end);
@@ -149,12 +156,21 @@ public class GoogleCalendarService {
         Event event = client.events().get("primary", googleEventId).execute();
         event.setSummary(dto.getTitle());
         event.setDescription(dto.getDescription());
+
+
+        LocalDateTime startLocal = LocalDateTime.parse(dto.getStartTime());
+        Instant startInstant = startLocal.atZone(ZoneId.of("Europe/Rome")).toInstant();
+        DateTime startDateTime = new DateTime(startInstant.toEpochMilli());
         event.setStart(new EventDateTime()
-                .setDateTime(new DateTime(dto.getStartTime()))
-                .setTimeZone(ZoneId.systemDefault().toString()));
+                .setDateTime(startDateTime)
+                .setTimeZone("Europe/Rome"));
+
+        LocalDateTime endLocal = LocalDateTime.parse(dto.getEndTime());
+        Instant endInstant = endLocal.atZone(ZoneId.of("Europe/Rome")).toInstant();
+        DateTime endDateTime = new DateTime(endInstant.toEpochMilli());
         event.setEnd(new EventDateTime()
-                .setDateTime(new DateTime(dto.getEndTime()))
-                .setTimeZone(ZoneId.systemDefault().toString()));
+                .setDateTime(endDateTime)
+                .setTimeZone("Europe/Rome"));
 
         return client.events().update("primary", googleEventId, event).execute();
     }
