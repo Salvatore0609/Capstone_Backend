@@ -124,10 +124,10 @@ public class GoogleCalendarService {
 
         EventDateTime start = new EventDateTime()
                 .setDateTime(new DateTime(dto.getStartTime()))
-                .setTimeZone(ZoneId.systemDefault().toString());
+                .setTimeZone(ZoneId.of("Europe/Rome").toString());
         EventDateTime end = new EventDateTime()
                 .setDateTime(new DateTime(dto.getEndTime()))
-                .setTimeZone(ZoneId.systemDefault().toString());
+                .setTimeZone(ZoneId.of("Europe/Rome").toString());
 
         event.setStart(start);
         event.setEnd(end);
